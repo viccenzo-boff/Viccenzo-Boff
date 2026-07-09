@@ -95,7 +95,7 @@ Execução completa do backlog 4.1 da versão anterior deste documento (removido
 
 **Verificação realizada:** `pnpm lint` e `pnpm build` limpos. Suíte Playwright (`pnpm test:e2e`) 12/12 passando (Desktop Chrome + Mobile Chrome). Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (dark validado com uma instância Chromium com CDP exposto, tema pré-setado em `localStorage` antes da auditoria), zero regressão em relação à V1.2.
 
-**Commits:** a criar. Nenhum push realizado — commits permanecem locais em `main`.
+**Commits:** `c807e7a` `feat(nav): ancora as 7 secoes com id estavel e scroll-margin`, `241fcf1` `feat(search): busca global fluida com Ctrl+K e navegacao ancorada`, `703201f` `test(e2e): cobre busca global e navegacao ancorada`, `b86be9b` `docs(prd): registra conclusao da busca global e navegacao ancorada (V1.2 -> V1.3)`. Nenhum push realizado — commits permanecem locais em `main`.
 
 ### 2026-07-09 — Acessibilidade, Testes e Conteúdo Acadêmico (V1.1 → V1.2)
 Execução completa do backlog 4.1–4.5 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3 e 6).
