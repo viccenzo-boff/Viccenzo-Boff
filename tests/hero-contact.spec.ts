@@ -6,6 +6,7 @@ import {
   buildMailtoUrl,
   buildOutlookComposeUrl,
 } from "@/lib/email-links";
+import { buildWhatsAppChatUrl } from "@/lib/whatsapp-link";
 
 const { contact } = cvData;
 const encodedSubject = encodeURIComponent(contact.emailSubject);
@@ -67,5 +68,23 @@ test.describe("Menu de contato por e-mail do Hero", () => {
 
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
     expect(clipboardText).toBe(contact.email);
+  });
+});
+
+test.describe("Botão de WhatsApp do Hero", () => {
+  test("abre conversa no WhatsApp em nova aba com número e mensagem pré-preenchida", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const whatsappLink = page.getByRole("link", { name: "Conversar no WhatsApp" });
+    await expect(whatsappLink).toBeVisible();
+    await expect(whatsappLink).toHaveAttribute("href", buildWhatsAppChatUrl(contact));
+    await expect(whatsappLink).toHaveAttribute("target", "_blank");
+    await expect(whatsappLink).toHaveAttribute("rel", "noopener noreferrer");
+
+    expect(buildWhatsAppChatUrl(contact)).toBe(
+      `https://wa.me/5549991429722?text=${encodeURIComponent(contact.whatsappMessage)}`
+    );
   });
 });

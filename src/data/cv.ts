@@ -5,6 +5,7 @@ export const cvData: CVData = {
     name: "Viccenzo Gottardo Boff",
     targetRole: "Analista de Tecnologia da Informação",
     phone: "49 99142-9722",
+    whatsappMessage: "Olá Viccenzo! Vi seu currículo online e gostaria de conversar.",
     email: "viccenzoboff@gmail.com",
     emailSubject: "Oportunidade Profissional – Contato via Currículo Online",
     location: "Chapecó - SC",

@@ -2,6 +2,7 @@ export interface ContactInfo {
   name: string;
   targetRole: string;
   phone: string;
+  whatsappMessage: string;
   email: string;
   emailSubject: string;
   location: string;
