@@ -14,7 +14,7 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 
 ---
 
-## 3. Estado Atual do Sistema (V1.1 em Produção)
+## 3. Estado Atual do Sistema (V1.3 em Produção)
 
 ### 3.1 Stack e Infraestrutura
 * Next.js 16 (App Router) + React 19 + TypeScript estrito.
