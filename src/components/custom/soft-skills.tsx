@@ -4,7 +4,7 @@ export function SoftSkills() {
   const { softSkills } = cvData;
 
   return (
-    <section className="border-b border-border bg-background">
+    <section id="competencias-comportamentais" className="scroll-mt-20 border-b border-border bg-background">
       <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
         <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
           Competências Comportamentais
