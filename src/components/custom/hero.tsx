@@ -1,5 +1,6 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 
+import { EmailContactMenu } from "@/components/custom/email-contact-menu";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cvData } from "@/data/cv";
@@ -46,12 +47,7 @@ export function Hero() {
         <Separator className="max-w-2xl" />
 
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg">
-            <a href={`mailto:${contact.email}`}>
-              <Mail />
-              {contact.email}
-            </a>
-          </Button>
+          <EmailContactMenu contact={contact} />
           <Button asChild variant="outline" size="lg">
             <a href={phoneHref}>
               <Phone />

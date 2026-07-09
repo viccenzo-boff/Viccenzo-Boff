@@ -3,6 +3,7 @@ export interface ContactInfo {
   targetRole: string;
   phone: string;
   email: string;
+  emailSubject: string;
   location: string;
   github: string;
 }

@@ -6,6 +6,7 @@ export const cvData: CVData = {
     targetRole: "Analista de Tecnologia da Informação",
     phone: "49 99142-9722",
     email: "viccenzoboff@gmail.com",
+    emailSubject: "Oportunidade Profissional – Contato via Currículo Online",
     location: "Chapecó - SC",
     github: "https://github.com/viccenzo-boff",
   },

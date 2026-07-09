@@ -1,9 +1,9 @@
-# Product Requirement Document (PRD) - Currículo Técnico Premium
+# Product Requirement Document (PRD) — Currículo Técnico Premium
 
 ## 1. Visão Geral do Produto
 O projeto é um portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff**, com foco em atrair e impressionar Recrutadores Seniores, Gerentes de Engenharia (EMs) e Diretores de TI. O site transparece rigor técnico, maturidade em engenharia de software e foco em resultados baseados em dados.
 
-**Status:** V1.4 em produção — Hero (seção de abertura) com layout centralizado, concluído sobre o V1.3 (busca global e navegação ancorada). Este documento reflete o estado atual do sistema e o backlog de evolução.
+**Status:** V1.6 implementada. Este documento reflete o estado atual do sistema; o backlog (seção 10) está vazio no momento.
 
 ---
 
@@ -14,138 +14,101 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 
 ---
 
-## 3. Estado Atual do Sistema (V1.4 em Produção)
-
-### 3.1 Stack e Infraestrutura
-* Next.js 16 (App Router) + React 19 + TypeScript estrito.
-* Tailwind CSS v4 + shadcn/ui (baseColor `zinc`, estilo `radix-vega`).
-* `next-themes` — alternância de tema (light/dark) via classe `dark` na tag `<html>`, persistida em `localStorage`.
-* Ícones via `lucide-react`.
+## 3. Stack e Infraestrutura
+* **Next.js 16.2.10** (App Router) + **React 19.2.4** + TypeScript estrito.
+* **Tailwind CSS v4** + **shadcn/ui** (baseColor `zinc`, estilo `radix-vega`).
+* **next-themes** — alternância de tema (light/dark) via classe `dark` na tag `<html>`, persistida em `localStorage`.
+* **cmdk** + `Dialog` do Radix — motor da busca global (seção 7).
+* Ícones via `lucide-react`. Fonte via `next/font/google` (Inter, variável `--font-sans`).
+* `lang="pt-BR"` no `<html>`, `suppressHydrationWarning` (necessário por causa do tema aplicado via script antes da hidratação).
 * Deploy estático/serverless na Vercel, custo zero de infraestrutura.
 * Aplicação de página única (SPA de rota única), sem backend, sem persistência em banco.
 
-### 3.2 Estrutura de Página
-`src/app/layout.tsx` envolve toda a aplicação com `ThemeProvider` (`src/app/providers.tsx`, client component sobre `next-themes`) e renderiza `SiteHeader` (`src/components/custom/site-header.tsx`) — uma barra sticky global, fora do fluxo de `page.tsx`, contendo `SearchCommand` (`search-command.tsx`, à esquerda) e `ModeToggle` (`mode-toggle.tsx`, à direita). Ela existe fora de `page.tsx` propositalmente: precisa sobreviver ao scroll das 7 seções abaixo, e este SPA não tem nav fixo.
+---
 
-`src/app/page.tsx` compõe as seções nesta ordem, cada uma um componente isolado em `src/components/custom/`. Cada seção carrega um `id` HTML estável e `scroll-mt-20` (compensa a altura do `SiteHeader` sticky no scroll ancorado) — âncoras usadas pelo `SearchCommand` (ver 3.6):
-1. **Hero** (`hero.tsx`, `id="inicio"`) — nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub). Layout centralizado (`items-center text-center` no container, `justify-center` na linha de botões) — único bloco da página com esse tratamento; as outras 6 seções mantêm conteúdo alinhado à esquerda (ver 3.4).
-2. **MetricsDashboard** (`metrics-dashboard.tsx`, `id="painel-de-impacto"`) — grid de 3 cards com as métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho).
-3. **ExperienceTimeline** (`experience-timeline.tsx`, `id="experiencia-profissional"`) — timeline vertical com as 3 experiências (Dotse, IXC Soft, Dona Loca) e seus highlights.
-4. **SkillsMatrix** (`skills-matrix.tsx`, `id="matriz-de-competencias"`) — grid de badges agrupadas por categoria de competência técnica.
-5. **SoftSkills** (`soft-skills.tsx`, `id="competencias-comportamentais"`) — grid com as competências comportamentais (`cvData.softSkills`).
-6. **AcademicBackground** (`academic-background.tsx`, `id="formacao-academica"`) — graduação em andamento (`cvData.education`: curso, instituição, período/status e previsão de conclusão).
-7. **AcademicMonitoring** (`academic-monitoring.tsx`, `id="monitorias-academicas"`) — lista das 5 monitorias acadêmicas consecutivas.
+## 4. Arquitetura da Aplicação
 
-### 3.3 Camada de Dados
+### 4.1 Layout Global
+`src/app/layout.tsx` envolve toda a aplicação com `ThemeProvider` (`src/app/providers.tsx`, client component sobre `next-themes`) e renderiza `SiteHeader` (`src/components/custom/site-header.tsx`) — uma barra sticky global, fora do fluxo de `page.tsx`, contendo `SearchCommand` (à esquerda) e `ModeToggle` (à direita), em layout `justify-between`. Ela existe fora de `page.tsx` propositalmente: precisa sobreviver ao scroll das 7 seções abaixo, e este SPA não tem nav fixo.
+
+### 4.2 Seções da Página
+`src/app/page.tsx` compõe as seções abaixo, nesta ordem, cada uma um componente isolado em `src/components/custom/`. Cada seção carrega um `id` HTML estável e `scroll-mt-20` (compensa a altura do `SiteHeader` sticky no scroll ancorado) — âncoras usadas pelo `SearchCommand` (seção 7). Os fundos alternam em faixas `bg-background` / `bg-muted` ao longo da página (ver regra de contraste na seção 6.3):
+
+| # | Componente | `id` | Fundo | Conteúdo |
+|---|---|---|---|---|
+| 1 | `hero.tsx` | `inicio` | `bg-background` | Nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub). Único bloco da página com layout centralizado (`items-center text-center`); as demais 6 seções mantêm conteúdo alinhado à esquerda. O botão de e-mail é o trigger de um menu de contato (`email-contact-menu.tsx`, client component sobre o `DropdownMenu` do shadcn/ui) com 4 ações: **Abrir no Gmail** e **Abrir no Outlook Web** (nova aba, `rel="noopener noreferrer"`), **Abrir no app de e-mail padrão** (`mailto:`) e **Copiar endereço** (`navigator.clipboard.writeText` com confirmação temporária no item — o menu permanece aberto via `preventDefault` no `onSelect` — anunciada por região `aria-live`/`role="status"`, `data-testid="email-copy-feedback"`). Todas as ações preservam o assunto automático `cvData.contact.emailSubject` (`cv.types.ts` / `cv.ts`); as URLs são montadas pelas funções puras de `src/lib/email-links.ts` (Gmail usa `su=`, Outlook usa `subject=`, ambos com `encodeURIComponent`). |
+| 2 | `metrics-dashboard.tsx` | `painel-de-impacto` | `bg-muted` | Grid de 3 cards com as métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho). |
+| 3 | `experience-timeline.tsx` | `experiencia-profissional` | `bg-background` | Timeline vertical com as 3 experiências (Dotse, IXC Soft, Dona Loca) e seus highlights. |
+| 4 | `skills-matrix.tsx` | `matriz-de-competencias` | `bg-muted` | Grid de badges agrupadas por categoria de competência técnica. |
+| 5 | `soft-skills.tsx` | `competencias-comportamentais` | `bg-background` | Grid com as competências comportamentais (`cvData.softSkills`). |
+| 6 | `academic-background.tsx` | `formacao-academica` | `bg-muted` | Graduação em andamento (`cvData.education`: curso, instituição, período/status e previsão de conclusão). |
+| 7 | `academic-monitoring.tsx` | `monitorias-academicas` | `bg-background` | Lista das 5 monitorias acadêmicas consecutivas. |
+
+---
+
+## 5. Camada de Dados
 * Fonte única de verdade: `src/data/cv.ts` (objeto `cvData`), tipado por `src/types/cv.types.ts`.
 * Todo o conteúdo textual do currículo é estático e tipado — nenhuma chamada de API ou CMS.
-* Todos os campos de `CVData` são renderizados por algum componente, incluindo `education` (via `academic-background.tsx`) e `softSkills` (via `soft-skills.tsx`) — não há mais campos órfãos.
-
-### 3.4 Design System
-* Light Mode como padrão (`defaultTheme="light"`), com Dark Mode disponível via alternância manual do usuário no `ModeToggle` (botão único, ícones `Sun`/`Moon`, sem dropdown, `aria-label` dinâmico + `aria-pressed`). `enableSystem={false}` — decisão de produto deliberada de **não** seguir a preferência de tema do sistema operacional automaticamente; reavaliada e **mantida** (ver changelog 2026-07-09, item 4.3 fechado sem alteração de código).
-* Paleta monocromática zinc, expressa via tokens semânticos do shadcn (`text-foreground`, `text-muted-foreground`, `border-border`, `bg-muted`, `bg-muted-foreground`) nos 7 componentes de negócio — nenhuma classe `zinc-*` hardcoded restante em `src/components/custom` (validado via `grep -rn "zinc-" src/components/custom`).
-* Decisão de execução (não estava explícita no plano original): para textos de corpo com leitura mais longa — resumo do Hero, linha empresa/local e highlights da timeline — usou-se `text-foreground/80` em vez de `text-muted-foreground`, preservando um contraste mais próximo do `zinc-600` original (mais alto que o de `zinc-500`/`muted-foreground`). Labels curtos, timestamps e categorias usam `text-muted-foreground`.
-* **Regra de contraste em seções `bg-muted`:** título de seção (`h2`) sobre fundo `bg-muted` não pode usar `text-muted-foreground` (dá 4,39:1 em light, abaixo do mínimo de 4,5:1) — usar `text-foreground/70` (7,38:1 em light, 7,73:1 em dark) nesse caso específico. Aplica-se hoje a `metrics-dashboard.tsx` e `skills-matrix.tsx`; `text-muted-foreground` continua correto para títulos de seção sobre `bg-background`.
-* `src/app/globals.css` mantém o bloco `.dark { ... }` e o `@custom-variant dark` sem alterações de paleta — a infraestrutura já existia (documentada na V1) e agora está efetivamente em uso.
-* **Alinhamento do Hero:** decisão de produto (feedback do usuário, 2026-07-09) de centralizar todo o conteúdo do Hero — nome, cargo, badge de localização, resumo profissional e botões de contato — incluindo o texto do parágrafo de resumo (`text-center`, não apenas o bloco como grupo). Resolve o vazio desproporcional à direita que aparecia em telas largas (>1280px) com o alinhamento à esquerda original. Escopo deliberadamente restrito ao Hero; as demais 6 seções continuam com conteúdo alinhado à esquerda dentro do mesmo container `mx-auto max-w-5xl` — estender a centralização a elas é um item de backlog futuro, não decidido ainda.
-
-### 3.5 Qualidade e Acessibilidade
-* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility` em 2026-07-09 — reconfirmado após a busca global (3.6) e novamente após a centralização do Hero (3.2/3.4) entrarem em produção, mesmo resultado (0 auditorias reprovadas). Dois problemas haviam sido encontrados na primeira rodada da V1.2 (nota 94) e já estavam corrigidos (ver regra de contraste acima e o h2 "Painel de Impacto" em `metrics-dashboard.tsx`).
-* **Testes automatizados:** `@playwright/test` como devDependency; suíte em dois arquivos — `tests/dark-mode.spec.ts` (tema padrão light, alternância para dark, persistência via `localStorage`, ausência de FOUC, zero erros de console) e `tests/search-navigation.spec.ts` (3.6) — executada em dois projetos Playwright (Desktop Chrome 1280px e Mobile Chrome 375px), 12/12 passando. Config em `playwright.config.ts` (sobe o build de produção via `webServer`). Comando: `pnpm test:e2e`.
-
-### 3.6 Busca Global e Navegação Ancorada
-* **Trigger:** botão no `SiteHeader` (`aria-label="Pesquisar no currículo"`, ícone de lupa, dica visual "Ctrl K" oculta em telas `sm-` para não competir por espaço no mobile) mais atalho de teclado global `Ctrl+K`/`Cmd+K` (listener em `document`, registrado por `SearchCommand`).
-* **Overlay:** `CommandDialog` do shadcn/ui (`src/components/ui/command.tsx`, sobre `cmdk` + Radix `Dialog`) — Esc fecha, foco retorna ao trigger ao fechar, título/descrição acessíveis via `sr-only` (comportamento herdado do Radix Dialog, sem código adicional).
-* **Índice de busca:** `src/lib/search-index.ts` deriva os itens pesquisáveis diretamente de `cvData` (nenhum conteúdo duplicado) — um item por métrica de impacto, experiência, grupo de competências técnicas, soft skill e monitoria, mais um item de perfil (Hero) e um de formação acadêmica; cada item carrega `sectionId` (a âncora), `title`, `subtitle` opcional e `keywords[]`. A filtragem usa o suporte nativo do `cmdk` a `keywords` no `CommandItem`, então a busca casa tanto pelo título quanto por texto auxiliar (ex: buscar "PostgreSQL" encontra o grupo "Bancos de Dados").
-* **Navegação fluida:** `src/lib/scroll-to-section.ts` fecha o overlay e chama `element.scrollIntoView({ behavior: "smooth", block: "start" })` (ou `"auto"` se `prefers-reduced-motion: reduce`), depois aplica a classe `.anchor-highlight` por 1,6s — keyframe `anchor-highlight-pulse` em `globals.css` (um pulso sutil de `box-shadow`/fundo usando os tokens `--ring`/`--foreground`, desativado sob `prefers-reduced-motion: reduce`). `html` ganhou `scroll-behavior: smooth` (com fallback `auto` no mesmo media query).
-* **Bug corrigido durante a implementação:** o `command.tsx` gerado pelo CLI do shadcn (`npx shadcn@latest add command dialog`) não envolvia `{children}` em `<Command>` dentro do `CommandDialog` — os subcomponentes do `cmdk` (`CommandInput`/`CommandList`/…) ficavam sem o contexto/store interno e o clique no trigger quebrava em runtime (`Cannot read properties of undefined (reading 'subscribe')`). Corrigido adicionando o wrapper `<Command>{children}</Command>` em `CommandDialog` — arquivo do shadcn tratado como código do projeto, conforme o próprio modelo do shadcn/ui.
+* Todos os campos de `CVData` (`contact`, `summary`, `impactMetrics`, `experiences`, `education`, `monitorias`, `technicalSkills`, `softSkills`) são renderizados por algum componente — não há campos órfãos.
 
 ---
 
-## 4. Backlog / Próximas Atividades
+## 6. Design System
 
-Nenhum item em aberto no momento. O item 4.1 da versão anterior deste documento (centralização visual do Hero) foi concluído — ver changelog (seção 6) para detalhes. A observação de escopo futuro registrada nesse item (avaliar centralizar as outras 6 seções) não foi promovida a item de backlog formal — depende de feedback do usuário sobre o resultado do Hero antes de expandir.
+### 6.1 Tema
+Light Mode como padrão (`defaultTheme="light"`), com Dark Mode disponível via alternância manual do usuário no `ModeToggle` (botão único, ícones `Sun`/`Moon`, sem dropdown, `aria-label` dinâmico + `aria-pressed`, `data-testid="mode-toggle"` para os testes). `enableSystem={false}` — decisão de produto deliberada de **não** seguir a preferência de tema do sistema operacional automaticamente, alinhada ao princípio de "Foco em Light Mode Corporativo" do `claude.md`; reavaliada com o usuário e mantida.
+
+`ModeToggle` usa `useSyncExternalStore` (em vez do padrão `useState`+`useEffect`) para o guard de hidratação, porque a regra de lint `react-hooks/set-state-in-effect` (habilitada neste projeto) rejeita a segunda abordagem.
+
+### 6.2 Paleta e Tokens
+Paleta monocromática zinc, expressa via tokens semânticos do shadcn (`text-foreground`, `text-muted-foreground`, `border-border`, `bg-muted`, `bg-muted-foreground`) nos 7 componentes de negócio — nenhuma classe `zinc-*` hardcoded em `src/components/custom`. `src/app/globals.css` define os tokens `:root` (light) e `.dark` (dark) e o `@custom-variant dark`.
+
+Para textos de corpo com leitura mais longa — resumo do Hero, linha empresa/local e highlights da timeline, descrição das soft skills, instituição na formação acadêmica — usa-se `text-foreground/80` em vez de `text-muted-foreground`, preservando um contraste mais alto (mais próximo do antigo `zinc-600`). Labels curtos, timestamps e categorias usam `text-muted-foreground`.
+
+### 6.3 Regra de Contraste em Seções `bg-muted`
+Título de seção (`h2`) sobre fundo `bg-muted` não pode usar `text-muted-foreground` (dá 4,39:1 em light, abaixo do mínimo de 4,5:1) — usa-se `text-foreground/70` (7,38:1 em light, 7,73:1 em dark) nesse caso específico. Aplica-se às 3 seções com fundo `bg-muted`: `metrics-dashboard.tsx`, `skills-matrix.tsx` e `academic-background.tsx` (esta última também usa `text-foreground/70` na linha de status "Cursando 6º Período · Previsão de conclusão..."). Nas 4 seções com fundo `bg-background`, o h2 usa `text-muted-foreground` normalmente.
+
+### 6.4 Alinhamento do Hero
+Todo o conteúdo do Hero — nome, cargo, badge de localização, resumo profissional (inclusive o texto do parágrafo, não apenas o bloco como grupo) e botões de contato — é centralizado (`text-center` / `justify-center`). Resolve o vazio desproporcional à direita que aparecia em telas largas (>1280px) com alinhamento à esquerda. Escopo deliberadamente restrito ao Hero; as demais 6 seções continuam com conteúdo alinhado à esquerda dentro do mesmo container `mx-auto max-w-5xl`.
 
 ---
 
-## 5. Fora de Escopo (mantido)
+## 7. Busca Global e Navegação Ancorada
+* **Trigger:** botão no `SiteHeader` (`aria-label="Pesquisar no currículo"`, ícone de lupa, dica visual "Ctrl K" oculta em telas `sm-`) mais atalho de teclado global `Ctrl+K`/`Cmd+K` (listener em `document`, registrado por `SearchCommand`).
+* **Overlay:** `CommandDialog` do shadcn/ui (`src/components/ui/command.tsx`, sobre `cmdk` + Radix `Dialog`) — Esc fecha, foco retorna ao trigger ao fechar, título/descrição acessíveis via `sr-only` (herdado do Radix Dialog).
+* **Índice de busca:** `src/lib/search-index.ts` deriva os itens pesquisáveis diretamente de `cvData` (nenhum conteúdo duplicado) — um item por métrica de impacto, experiência, grupo de competências técnicas, soft skill e monitoria, mais um item de perfil (Hero) e um de formação acadêmica; cada item carrega `sectionId` (a âncora), `title`, `subtitle` opcional e `keywords[]`. A filtragem usa o suporte nativo do `cmdk` a `keywords` no `CommandItem`, então a busca casa tanto pelo título quanto por texto auxiliar (ex.: buscar "PostgreSQL" encontra o grupo "Bancos de Dados").
+* **Navegação fluida:** `src/lib/scroll-to-section.ts` fecha o overlay e chama `element.scrollIntoView({ behavior: "smooth", block: "start" })` (ou `"auto"` se `prefers-reduced-motion: reduce`), depois aplica a classe `.anchor-highlight` por 1,6s — keyframe `anchor-highlight-pulse` em `globals.css` (pulso sutil de `box-shadow`/fundo usando os tokens `--ring`/`--foreground`, desativado sob `prefers-reduced-motion: reduce`). `html` tem `scroll-behavior: smooth` (fallback `auto` no mesmo media query).
+* **Nota de manutenção:** o `CommandDialog` em `command.tsx` precisa envolver `{children}` em `<Command>` (`<Command>{children}</Command>`). O código gerado pelo CLI do shadcn (`npx shadcn@latest add command dialog`) não faz isso por padrão — sem o wrapper, os subcomponentes do `cmdk` ficam sem o contexto/store interno e o clique no trigger quebra em runtime (`Cannot read properties of undefined (reading 'subscribe')`). Se o componente for regenerado via CLI, reaplicar esse ajuste.
+
+---
+
+## 8. Qualidade, Acessibilidade e Testes
+* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility`.
+* **Testes automatizados:** `@playwright/test` como devDependency; suíte em três arquivos — `tests/dark-mode.spec.ts` (tema padrão light, alternância para dark, persistência via `localStorage`, ausência de FOUC, zero erros de console; 3 testes), `tests/search-navigation.spec.ts` (abertura via botão/atalho, filtragem, navegação até a seção, fechamento via Esc, estado vazio; 3 testes) e `tests/hero-contact.spec.ts` (menu de contato por e-mail do Hero: abertura com as 4 opções, URLs de Gmail com `su=` e Outlook com `subject=` em nova aba, item `mailto:` preservando `cvData.contact.emailSubject`, cópia para o clipboard com confirmação visível e anúncio `aria-live` — usa `context.grantPermissions(["clipboard-read", "clipboard-write"])`; 3 testes) — 9 testes no total, executados em 2 projetos Playwright (Desktop Chrome 1280px e Mobile Chrome 375px via `devices["Pixel 7"]`), 18/18 passando. Config em `playwright.config.ts` (sobe o build de produção via `webServer`, porta 3100). Comando: `pnpm test:e2e`.
+
+---
+
+## 9. Fora de Escopo
 * Backend dedicado com banco de dados relacional ativo — todo o conteúdo continua estático e tipado em `src/data/cv.ts`.
 * Formulário de contato com persistência em banco — mantidos os links diretos de e-mail/telefone/GitHub.
 
 ---
 
-## 6. Changelog
+## 10. Backlog / Próximas Atividades
 
-### 2026-07-09 — Hero Centralizado (V1.3 → V1.4)
-Execução completa do backlog 4.1 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3.2 e 3.4).
+_Sem atividades planejadas no momento._
 
-**Arquivos alterados:**
-* `hero.tsx` — container raiz ganhou `items-center text-center`; bloco nome/cargo ganhou `items-center`; linha de botões de contato trocou `flex flex-wrap items-center gap-3` por `flex flex-wrap items-center justify-center gap-3`. `max-w-2xl` do resumo e do `Separator` mantidos (controlam o comprimento de linha do texto centralizado).
+---
 
-**Decisão registrada:** resumo profissional centralizado com `text-center` (não apenas o bloco como grupo) — opção escolhida pelo usuário entre as duas alternativas levantadas no item 4.1 anterior. Centralização restrita ao Hero; as outras 6 seções não foram alteradas (ver 3.4).
+## 11. Histórico de Versões
 
-**Verificação realizada:** `pnpm lint` e `pnpm build` limpos. Suíte Playwright (`pnpm test:e2e`) 12/12 passando (Desktop Chrome + Mobile Chrome), sem alteração nos specs existentes. Capturas de tela manuais via Playwright em 4 larguras (375px, 768px, 1280px, 1920px) confirmando ausência do vazio à direita relatado. Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (dark validado com instância Chromium com CDP exposto, tema pré-setado em `localStorage`), zero regressão em relação à V1.3.
+| Versão | Entrega | Commits |
+|---|---|---|
+| V1 → V1.1 | Dark Mode: `ThemeProvider`, `ModeToggle`, `SiteHeader`; migração de classes `zinc-*` hardcoded para tokens semânticos. | `01e65af`, `5001243` |
+| V1.1 → V1.2 | Acessibilidade (Lighthouse 94→100), suíte Playwright inicial (dark mode), seções "Formação Acadêmica" e "Competências Comportamentais". | `08316a9`, `09e3754`, `ca0c3cd`, `4029ab1` |
+| V1.2 → V1.3 | Busca global (`Ctrl+K`) e navegação ancorada: `id` estável + `scroll-mt-20` nas 7 seções, `SearchCommand`, `search-index.ts`, `scroll-to-section.ts`, testes `search-navigation.spec.ts`. | `c807e7a`, `241fcf1`, `703201f` |
+| V1.3 → V1.4 | Hero centralizado (nome, cargo, resumo e botões de contato). | `7de8494` |
+| V1.4 → V1.5 | Assunto automático no botão de e-mail do Hero: campo `emailSubject` em `ContactInfo`/`cvData.contact`, `href` do mailto com `?subject=` via `encodeURIComponent`, novo teste `tests/hero-contact.spec.ts`. | _(pendente commit do usuário)_ |
+| V1.5 → V1.6 | Menu de contato por e-mail no Hero: `DropdownMenu` do shadcn com 4 ações (Gmail, Outlook Web, `mailto:`, Copiar endereço com feedback `aria-live`), funções puras em `src/lib/email-links.ts`, componente `email-contact-menu.tsx`, testes do menu em `hero-contact.spec.ts` (clipboard via `grantPermissions`), Lighthouse Acessibilidade 100 revalidado em light e dark. Motivação: `mailto:` sozinho falha silenciosamente sem cliente de e-mail configurado; não há API para detectar o webmail do visitante, então as opções são oferecidas explicitamente. | _(pendente commit do usuário)_ |
 
-**Commits:** nenhum realizado por Claude Code — a partir desta entrada, commits neste repositório são feitos exclusivamente pelo usuário (regra adicionada ao `claude.md`, seção 3). Mudanças permanecem no working tree, pendentes de commit manual.
-
-### 2026-07-09 — Busca Global e Navegação Ancorada (V1.2 → V1.3)
-Execução completa do backlog 4.1 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3.2 e 3.6).
-
-**Arquivos novos:**
-* `src/components/custom/search-command.tsx` — trigger de busca + `CommandDialog`, atalho `Ctrl+K`/`Cmd+K`, agrupa resultados por seção.
-* `src/lib/search-index.ts` — índice de busca derivado de `cvData` (perfil, métricas, experiências, competências técnicas, soft skills, formação, monitorias).
-* `src/lib/scroll-to-section.ts` — scroll suave até a âncora + destaque temporário, com guarda de `prefers-reduced-motion`.
-* `src/components/ui/command.tsx`, `dialog.tsx`, `input.tsx`, `input-group.tsx`, `textarea.tsx` — instalados via `npx shadcn@latest add command dialog`.
-* `tests/search-navigation.spec.ts` — abertura via botão/atalho, filtragem, navegação até a seção, fechamento via Esc, estado vazio.
-
-**Arquivos alterados:**
-* `hero.tsx`, `metrics-dashboard.tsx`, `experience-timeline.tsx`, `skills-matrix.tsx`, `soft-skills.tsx`, `academic-background.tsx`, `academic-monitoring.tsx` — adicionado `id` estável + `scroll-mt-20` na seção raiz de cada componente.
-* `site-header.tsx` — `SearchCommand` adicionado ao lado do `ModeToggle`; layout mudou de `justify-end` para `justify-between`.
-* `globals.css` — `scroll-behavior: smooth` em `html`; keyframe `anchor-highlight-pulse` + classe `.anchor-highlight`; ambos desativados sob `prefers-reduced-motion: reduce`.
-* `package.json` / `pnpm-lock.yaml` — dependências do `cmdk` e dos componentes shadcn instalados.
-
-**Bug corrigido:** `command.tsx` gerado pelo CLI do shadcn não envolvia os filhos do `CommandDialog` em `<Command>`, quebrando em runtime ao abrir o overlay (`Cannot read properties of undefined (reading 'subscribe')`) — ver detalhe em 3.6.
-
-**Verificação realizada:** `pnpm lint` e `pnpm build` limpos. Suíte Playwright (`pnpm test:e2e`) 12/12 passando (Desktop Chrome + Mobile Chrome). Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (dark validado com uma instância Chromium com CDP exposto, tema pré-setado em `localStorage` antes da auditoria), zero regressão em relação à V1.2.
-
-**Commits:** `c807e7a` `feat(nav): ancora as 7 secoes com id estavel e scroll-margin`, `241fcf1` `feat(search): busca global fluida com Ctrl+K e navegacao ancorada`, `703201f` `test(e2e): cobre busca global e navegacao ancorada`, `b86be9b` `docs(prd): registra conclusao da busca global e navegacao ancorada (V1.2 -> V1.3)`. Nenhum push realizado — commits permanecem locais em `main`.
-
-### 2026-07-09 — Acessibilidade, Testes e Conteúdo Acadêmico (V1.1 → V1.2)
-Execução completa do backlog 4.1–4.5 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3 e 6).
-
-**Arquivos novos:**
-* `src/components/custom/soft-skills.tsx` — seção "Competências Comportamentais", renderiza `cvData.softSkills`.
-* `src/components/custom/academic-background.tsx` — seção "Formação Acadêmica", renderiza `cvData.education`.
-* `playwright.config.ts` — configuração do Playwright (projetos Desktop Chrome 1280px e Mobile Chrome 375px, `webServer` sobe o build de produção).
-* `tests/dark-mode.spec.ts` — suíte de regressão do Dark Mode (tema padrão, alternância, persistência via `localStorage`, ausência de FOUC, zero erros de console).
-
-**Arquivos alterados:**
-* `metrics-dashboard.tsx` — adicionado h2 "Painel de Impacto" (corrige heading-order: a seção pulava de h1 direto para h3).
-* `skills-matrix.tsx` — h2 "Matriz de Competências" trocado de `text-muted-foreground` para `text-foreground/70` (corrige color-contrast de 4,39:1 para 7,38:1 sobre `bg-muted`).
-* `mode-toggle.tsx` — `aria-label` estático trocado por rótulo dinâmico ("Mudar para modo escuro"/"Mudar para modo claro") + `aria-pressed`; adicionado `data-testid="mode-toggle"`.
-* `page.tsx` — `SoftSkills` e `AcademicBackground` inseridos na composição, entre `SkillsMatrix` e `AcademicMonitoring`.
-* `package.json` / `pnpm-lock.yaml` — dependência `@playwright/test` adicionada; script `test:e2e`.
-* `.gitignore` — ignorados `/playwright-report`, `/test-results`, `/blob-report`.
-
-**Decisão registrada (item 4.3):** `enableSystem`/`defaultTheme` reavaliados com o usuário e **mantidos** (`false`/`"light"`), alinhado ao princípio de "Foco em Light Mode Corporativo" do `claude.md`. Fechado sem alteração de código.
-
-**Verificação realizada:** Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (zero auditorias reprovadas; a primeira rodada, antes das correções acima, obteve 94/100 em light). Suíte Playwright (`pnpm test:e2e`) com 6/6 testes passando em Desktop Chrome e Mobile Chrome. `pnpm lint` e `pnpm build` limpos em todas as etapas.
-
-**Commits:** `08316a9` `fix(a11y): corrige contraste e ordem de headings para Lighthouse 100/100`, `09e3754` `fix(a11y): rotulo dinamico e aria-pressed no ModeToggle`, `ca0c3cd` `test(e2e): adiciona Playwright e teste de regressao do Dark Mode`, `4029ab1` `feat(cv): renderiza Formacao Academica e Soft Skills`. Nenhum push realizado — commits permanecem locais em `main`.
-
-### 2026-07-09 — Dark Mode (V1 → V1.1)
-Implementação completa da especificação da antiga seção 4.1 (removida deste documento; conteúdo incorporado às seções 3 e 4 acima).
-
-**Arquivos novos:**
-* `src/app/providers.tsx` — `ThemeProvider` client component sobre `next-themes`.
-* `src/components/custom/mode-toggle.tsx` — botão de alternância (Sun/Moon), usa `useSyncExternalStore` para o guard de hidratação em vez do padrão `useState`+`useEffect`, que a regra de lint `react-hooks/set-state-in-effect` (habilitada neste projeto) rejeita.
-* `src/components/custom/site-header.tsx` — barra sticky global com o `ModeToggle`.
-
-**Arquivos alterados:**
-* `src/app/layout.tsx` — `ThemeProvider` + `SiteHeader` conectados, `suppressHydrationWarning` adicionado, `lang="en"` → `lang="pt-BR"`.
-* `hero.tsx`, `metrics-dashboard.tsx`, `experience-timeline.tsx`, `skills-matrix.tsx`, `academic-monitoring.tsx` — migração de classes `zinc-*` hardcoded para tokens semânticos.
-* `package.json` / `pnpm-lock.yaml` — dependência `next-themes` adicionada.
-
-**Verificação realizada:** `pnpm lint` e `pnpm build` limpos; smoke test com Playwright (Chromium headless) cobrindo tema padrão light, alternância para dark, persistência pós-reload, viewport mobile (375px) e desktop (1280px), e checagem de `console --errors` (nenhum erro). Lighthouse de Acessibilidade **não** foi executado (ver 4.1).
-
-**Commits:** `01e65af` `feat(theme): add dark mode toggle with next-themes`, `5001243` `refactor(ui): migrate hardcoded zinc colors to semantic tokens`. Nenhum push realizado — commits permanecem locais em `main`.
+Todos os commits acima estão locais em `main`; nenhum push foi realizado. Commits neste repositório são feitos exclusivamente pelo usuário (ver `claude.md`, seção 3) — Claude Code não executa `git commit`/`git push`.
