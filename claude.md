@@ -15,4 +15,4 @@ Você é o Engenheiro de Software Sênior encarregado de construir o site de cur
 
 ## 3. Fluxo de Trabalho e Commits
 * Antes de escrever qualquer componente de tela, garanta que os dados que alimentam esse componente estejam mapeados corretamente em `src/data/cv.ts`.
-* Faça commits atômicos utilizando a convenção de Git Commits Semânticos (Conventional Commits), ex: `feat(ui): add key metrics dashboard component`.
+* **PROIBIDO REALIZAR COMMITS:** Claude nunca deve executar `git commit` (nem `git push`) neste repositório, mesmo que o trabalho esteja pronto e verificado. Quem faz os commits é o usuário. Ao concluir uma tarefa, deixe as mudanças no working tree e apenas informe que estão prontas para revisão/commit. Se for útil, sugira uma mensagem de commit seguindo a convenção de Git Commits Semânticos (Conventional Commits), ex: `feat(ui): add key metrics dashboard component`, mas não a execute.

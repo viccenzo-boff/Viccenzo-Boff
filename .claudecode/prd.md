@@ -3,7 +3,7 @@
 ## 1. Visão Geral do Produto
 O projeto é um portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff**, com foco em atrair e impressionar Recrutadores Seniores, Gerentes de Engenharia (EMs) e Diretores de TI. O site transparece rigor técnico, maturidade em engenharia de software e foco em resultados baseados em dados.
 
-**Status:** V1.3 em produção — busca global (`Ctrl+K`) com navegação ancorada e scroll suave até a seção correspondente, concluída sobre o V1.2 (acessibilidade, testes e conteúdo acadêmico/soft skills). Este documento reflete o estado atual do sistema e o backlog de evolução.
+**Status:** V1.4 em produção — Hero (seção de abertura) com layout centralizado, concluído sobre o V1.3 (busca global e navegação ancorada). Este documento reflete o estado atual do sistema e o backlog de evolução.
 
 ---
 
@@ -14,7 +14,7 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 
 ---
 
-## 3. Estado Atual do Sistema (V1.3 em Produção)
+## 3. Estado Atual do Sistema (V1.4 em Produção)
 
 ### 3.1 Stack e Infraestrutura
 * Next.js 16 (App Router) + React 19 + TypeScript estrito.
@@ -28,7 +28,7 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 `src/app/layout.tsx` envolve toda a aplicação com `ThemeProvider` (`src/app/providers.tsx`, client component sobre `next-themes`) e renderiza `SiteHeader` (`src/components/custom/site-header.tsx`) — uma barra sticky global, fora do fluxo de `page.tsx`, contendo `SearchCommand` (`search-command.tsx`, à esquerda) e `ModeToggle` (`mode-toggle.tsx`, à direita). Ela existe fora de `page.tsx` propositalmente: precisa sobreviver ao scroll das 7 seções abaixo, e este SPA não tem nav fixo.
 
 `src/app/page.tsx` compõe as seções nesta ordem, cada uma um componente isolado em `src/components/custom/`. Cada seção carrega um `id` HTML estável e `scroll-mt-20` (compensa a altura do `SiteHeader` sticky no scroll ancorado) — âncoras usadas pelo `SearchCommand` (ver 3.6):
-1. **Hero** (`hero.tsx`, `id="inicio"`) — nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub).
+1. **Hero** (`hero.tsx`, `id="inicio"`) — nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub). Layout centralizado (`items-center text-center` no container, `justify-center` na linha de botões) — único bloco da página com esse tratamento; as outras 6 seções mantêm conteúdo alinhado à esquerda (ver 3.4).
 2. **MetricsDashboard** (`metrics-dashboard.tsx`, `id="painel-de-impacto"`) — grid de 3 cards com as métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho).
 3. **ExperienceTimeline** (`experience-timeline.tsx`, `id="experiencia-profissional"`) — timeline vertical com as 3 experiências (Dotse, IXC Soft, Dona Loca) e seus highlights.
 4. **SkillsMatrix** (`skills-matrix.tsx`, `id="matriz-de-competencias"`) — grid de badges agrupadas por categoria de competência técnica.
@@ -47,9 +47,10 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 * Decisão de execução (não estava explícita no plano original): para textos de corpo com leitura mais longa — resumo do Hero, linha empresa/local e highlights da timeline — usou-se `text-foreground/80` em vez de `text-muted-foreground`, preservando um contraste mais próximo do `zinc-600` original (mais alto que o de `zinc-500`/`muted-foreground`). Labels curtos, timestamps e categorias usam `text-muted-foreground`.
 * **Regra de contraste em seções `bg-muted`:** título de seção (`h2`) sobre fundo `bg-muted` não pode usar `text-muted-foreground` (dá 4,39:1 em light, abaixo do mínimo de 4,5:1) — usar `text-foreground/70` (7,38:1 em light, 7,73:1 em dark) nesse caso específico. Aplica-se hoje a `metrics-dashboard.tsx` e `skills-matrix.tsx`; `text-muted-foreground` continua correto para títulos de seção sobre `bg-background`.
 * `src/app/globals.css` mantém o bloco `.dark { ... }` e o `@custom-variant dark` sem alterações de paleta — a infraestrutura já existia (documentada na V1) e agora está efetivamente em uso.
+* **Alinhamento do Hero:** decisão de produto (feedback do usuário, 2026-07-09) de centralizar todo o conteúdo do Hero — nome, cargo, badge de localização, resumo profissional e botões de contato — incluindo o texto do parágrafo de resumo (`text-center`, não apenas o bloco como grupo). Resolve o vazio desproporcional à direita que aparecia em telas largas (>1280px) com o alinhamento à esquerda original. Escopo deliberadamente restrito ao Hero; as demais 6 seções continuam com conteúdo alinhado à esquerda dentro do mesmo container `mx-auto max-w-5xl` — estender a centralização a elas é um item de backlog futuro, não decidido ainda.
 
 ### 3.5 Qualidade e Acessibilidade
-* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility` em 2026-07-09 — reconfirmado após a busca global (3.6) entrar em produção, mesmo resultado (0 auditorias reprovadas). Dois problemas haviam sido encontrados na primeira rodada da V1.2 (nota 94) e já estavam corrigidos (ver regra de contraste acima e o h2 "Painel de Impacto" em `metrics-dashboard.tsx`).
+* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility` em 2026-07-09 — reconfirmado após a busca global (3.6) e novamente após a centralização do Hero (3.2/3.4) entrarem em produção, mesmo resultado (0 auditorias reprovadas). Dois problemas haviam sido encontrados na primeira rodada da V1.2 (nota 94) e já estavam corrigidos (ver regra de contraste acima e o h2 "Painel de Impacto" em `metrics-dashboard.tsx`).
 * **Testes automatizados:** `@playwright/test` como devDependency; suíte em dois arquivos — `tests/dark-mode.spec.ts` (tema padrão light, alternância para dark, persistência via `localStorage`, ausência de FOUC, zero erros de console) e `tests/search-navigation.spec.ts` (3.6) — executada em dois projetos Playwright (Desktop Chrome 1280px e Mobile Chrome 375px), 12/12 passando. Config em `playwright.config.ts` (sobe o build de produção via `webServer`). Comando: `pnpm test:e2e`.
 
 ### 3.6 Busca Global e Navegação Ancorada
@@ -63,7 +64,7 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 
 ## 4. Backlog / Próximas Atividades
 
-Nenhum item em aberto no momento. O item 4.1 da versão anterior deste documento (ancoragem de seções + busca global fluida) foi concluído — ver changelog (seção 6) para detalhes.
+Nenhum item em aberto no momento. O item 4.1 da versão anterior deste documento (centralização visual do Hero) foi concluído — ver changelog (seção 6) para detalhes. A observação de escopo futuro registrada nesse item (avaliar centralizar as outras 6 seções) não foi promovida a item de backlog formal — depende de feedback do usuário sobre o resultado do Hero antes de expandir.
 
 ---
 
@@ -74,6 +75,18 @@ Nenhum item em aberto no momento. O item 4.1 da versão anterior deste documento
 ---
 
 ## 6. Changelog
+
+### 2026-07-09 — Hero Centralizado (V1.3 → V1.4)
+Execução completa do backlog 4.1 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3.2 e 3.4).
+
+**Arquivos alterados:**
+* `hero.tsx` — container raiz ganhou `items-center text-center`; bloco nome/cargo ganhou `items-center`; linha de botões de contato trocou `flex flex-wrap items-center gap-3` por `flex flex-wrap items-center justify-center gap-3`. `max-w-2xl` do resumo e do `Separator` mantidos (controlam o comprimento de linha do texto centralizado).
+
+**Decisão registrada:** resumo profissional centralizado com `text-center` (não apenas o bloco como grupo) — opção escolhida pelo usuário entre as duas alternativas levantadas no item 4.1 anterior. Centralização restrita ao Hero; as outras 6 seções não foram alteradas (ver 3.4).
+
+**Verificação realizada:** `pnpm lint` e `pnpm build` limpos. Suíte Playwright (`pnpm test:e2e`) 12/12 passando (Desktop Chrome + Mobile Chrome), sem alteração nos specs existentes. Capturas de tela manuais via Playwright em 4 larguras (375px, 768px, 1280px, 1920px) confirmando ausência do vazio à direita relatado. Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (dark validado com instância Chromium com CDP exposto, tema pré-setado em `localStorage`), zero regressão em relação à V1.3.
+
+**Commits:** nenhum realizado por Claude Code — a partir desta entrada, commits neste repositório são feitos exclusivamente pelo usuário (regra adicionada ao `claude.md`, seção 3). Mudanças permanecem no working tree, pendentes de commit manual.
 
 ### 2026-07-09 — Busca Global e Navegação Ancorada (V1.2 → V1.3)
 Execução completa do backlog 4.1 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3.2 e 3.6).
