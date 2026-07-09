@@ -7,7 +7,7 @@ export function SkillsMatrix() {
   return (
     <section className="border-b border-border bg-muted">
       <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <h2 className="text-sm font-semibold tracking-widest text-foreground/70 uppercase">
           Matriz de Competências
         </h2>
 
