@@ -19,21 +19,20 @@ function useMounted() {
 export function ModeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      aria-label="Alternar tema claro/escuro"
+      data-testid="mode-toggle"
+      aria-label={isDark ? "Mudar para modo claro" : "Mudar para modo escuro"}
+      aria-pressed={isDark}
       onClick={() =>
         setTheme(resolvedTheme === "dark" ? "light" : "dark")
       }
     >
-      {mounted && resolvedTheme === "dark" ? (
-        <Moon aria-hidden="true" />
-      ) : (
-        <Sun aria-hidden="true" />
-      )}
+      {isDark ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
     </Button>
   );
 }
