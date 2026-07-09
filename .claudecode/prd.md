@@ -3,7 +3,7 @@
 ## 1. Visão Geral do Produto
 O projeto é um portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff**, com foco em atrair e impressionar Recrutadores Seniores, Gerentes de Engenharia (EMs) e Diretores de TI. O site transparece rigor técnico, maturidade em engenharia de software e foco em resultados baseados em dados.
 
-**Status:** V1.2 em produção — auditoria de acessibilidade, testes automatizados de regressão e conteúdo acadêmico/soft skills concluídos sobre o V1.1 (Dark Mode). Este documento reflete o estado atual do sistema e o backlog de evolução.
+**Status:** V1.3 em produção — busca global (`Ctrl+K`) com navegação ancorada e scroll suave até a seção correspondente, concluída sobre o V1.2 (acessibilidade, testes e conteúdo acadêmico/soft skills). Este documento reflete o estado atual do sistema e o backlog de evolução.
 
 ---
 
@@ -25,16 +25,16 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 * Aplicação de página única (SPA de rota única), sem backend, sem persistência em banco.
 
 ### 3.2 Estrutura de Página
-`src/app/layout.tsx` envolve toda a aplicação com `ThemeProvider` (`src/app/providers.tsx`, client component sobre `next-themes`) e renderiza `SiteHeader` (`src/components/custom/site-header.tsx`) — uma barra sticky global, fora do fluxo de `page.tsx`, contendo apenas o `ModeToggle` (`src/components/custom/mode-toggle.tsx`). Ela existe fora de `page.tsx` propositalmente: precisa sobreviver ao scroll das 5 seções abaixo, e este SPA não tem nav fixo.
+`src/app/layout.tsx` envolve toda a aplicação com `ThemeProvider` (`src/app/providers.tsx`, client component sobre `next-themes`) e renderiza `SiteHeader` (`src/components/custom/site-header.tsx`) — uma barra sticky global, fora do fluxo de `page.tsx`, contendo `SearchCommand` (`search-command.tsx`, à esquerda) e `ModeToggle` (`mode-toggle.tsx`, à direita). Ela existe fora de `page.tsx` propositalmente: precisa sobreviver ao scroll das 7 seções abaixo, e este SPA não tem nav fixo.
 
-`src/app/page.tsx` compõe as seções nesta ordem, cada uma um componente isolado em `src/components/custom/`:
-1. **Hero** (`hero.tsx`) — nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub).
-2. **MetricsDashboard** (`metrics-dashboard.tsx`) — grid de 3 cards com as métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho), sob o título de seção "Painel de Impacto".
-3. **ExperienceTimeline** (`experience-timeline.tsx`) — timeline vertical com as 3 experiências (Dotse, IXC Soft, Dona Loca) e seus highlights.
-4. **SkillsMatrix** (`skills-matrix.tsx`) — grid de badges agrupadas por categoria de competência técnica.
-5. **SoftSkills** (`soft-skills.tsx`) — grid com as competências comportamentais (`cvData.softSkills`).
-6. **AcademicBackground** (`academic-background.tsx`) — graduação em andamento (`cvData.education`: curso, instituição, período/status e previsão de conclusão).
-7. **AcademicMonitoring** (`academic-monitoring.tsx`) — lista das 5 monitorias acadêmicas consecutivas.
+`src/app/page.tsx` compõe as seções nesta ordem, cada uma um componente isolado em `src/components/custom/`. Cada seção carrega um `id` HTML estável e `scroll-mt-20` (compensa a altura do `SiteHeader` sticky no scroll ancorado) — âncoras usadas pelo `SearchCommand` (ver 3.6):
+1. **Hero** (`hero.tsx`, `id="inicio"`) — nome, cargo alvo, localização, resumo profissional e botões de contato (e-mail, telefone, GitHub).
+2. **MetricsDashboard** (`metrics-dashboard.tsx`, `id="painel-de-impacto"`) — grid de 3 cards com as métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho).
+3. **ExperienceTimeline** (`experience-timeline.tsx`, `id="experiencia-profissional"`) — timeline vertical com as 3 experiências (Dotse, IXC Soft, Dona Loca) e seus highlights.
+4. **SkillsMatrix** (`skills-matrix.tsx`, `id="matriz-de-competencias"`) — grid de badges agrupadas por categoria de competência técnica.
+5. **SoftSkills** (`soft-skills.tsx`, `id="competencias-comportamentais"`) — grid com as competências comportamentais (`cvData.softSkills`).
+6. **AcademicBackground** (`academic-background.tsx`, `id="formacao-academica"`) — graduação em andamento (`cvData.education`: curso, instituição, período/status e previsão de conclusão).
+7. **AcademicMonitoring** (`academic-monitoring.tsx`, `id="monitorias-academicas"`) — lista das 5 monitorias acadêmicas consecutivas.
 
 ### 3.3 Camada de Dados
 * Fonte única de verdade: `src/data/cv.ts` (objeto `cvData`), tipado por `src/types/cv.types.ts`.
@@ -49,14 +49,21 @@ O projeto é um portfólio/currículo digital de altíssimo nível para **Viccen
 * `src/app/globals.css` mantém o bloco `.dark { ... }` e o `@custom-variant dark` sem alterações de paleta — a infraestrutura já existia (documentada na V1) e agora está efetivamente em uso.
 
 ### 3.5 Qualidade e Acessibilidade
-* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility` em 2026-07-09. Dois problemas encontrados na primeira rodada (nota 94) e corrigidos (ver regra de contraste acima e o h2 "Painel de Impacto" adicionado a `metrics-dashboard.tsx`, que antes pulava de h1 direto para h3).
-* **Testes automatizados:** `@playwright/test` como devDependency; suíte de regressão em `tests/dark-mode.spec.ts` cobre tema padrão light, alternância para dark, persistência via `localStorage` pós-reload, ausência de FOUC e zero erros de console — executada em dois projetos Playwright (Desktop Chrome 1280px e Mobile Chrome 375px). Config em `playwright.config.ts` (sobe o build de produção via `webServer`). Comando: `pnpm test:e2e`.
+* **Lighthouse (categoria Acessibilidade):** 100/100 em light e 100/100 em dark, auditado contra o build de produção (`pnpm build && pnpm start`) via `npx lighthouse --only-categories=accessibility` em 2026-07-09 — reconfirmado após a busca global (3.6) entrar em produção, mesmo resultado (0 auditorias reprovadas). Dois problemas haviam sido encontrados na primeira rodada da V1.2 (nota 94) e já estavam corrigidos (ver regra de contraste acima e o h2 "Painel de Impacto" em `metrics-dashboard.tsx`).
+* **Testes automatizados:** `@playwright/test` como devDependency; suíte em dois arquivos — `tests/dark-mode.spec.ts` (tema padrão light, alternância para dark, persistência via `localStorage`, ausência de FOUC, zero erros de console) e `tests/search-navigation.spec.ts` (3.6) — executada em dois projetos Playwright (Desktop Chrome 1280px e Mobile Chrome 375px), 12/12 passando. Config em `playwright.config.ts` (sobe o build de produção via `webServer`). Comando: `pnpm test:e2e`.
+
+### 3.6 Busca Global e Navegação Ancorada
+* **Trigger:** botão no `SiteHeader` (`aria-label="Pesquisar no currículo"`, ícone de lupa, dica visual "Ctrl K" oculta em telas `sm-` para não competir por espaço no mobile) mais atalho de teclado global `Ctrl+K`/`Cmd+K` (listener em `document`, registrado por `SearchCommand`).
+* **Overlay:** `CommandDialog` do shadcn/ui (`src/components/ui/command.tsx`, sobre `cmdk` + Radix `Dialog`) — Esc fecha, foco retorna ao trigger ao fechar, título/descrição acessíveis via `sr-only` (comportamento herdado do Radix Dialog, sem código adicional).
+* **Índice de busca:** `src/lib/search-index.ts` deriva os itens pesquisáveis diretamente de `cvData` (nenhum conteúdo duplicado) — um item por métrica de impacto, experiência, grupo de competências técnicas, soft skill e monitoria, mais um item de perfil (Hero) e um de formação acadêmica; cada item carrega `sectionId` (a âncora), `title`, `subtitle` opcional e `keywords[]`. A filtragem usa o suporte nativo do `cmdk` a `keywords` no `CommandItem`, então a busca casa tanto pelo título quanto por texto auxiliar (ex: buscar "PostgreSQL" encontra o grupo "Bancos de Dados").
+* **Navegação fluida:** `src/lib/scroll-to-section.ts` fecha o overlay e chama `element.scrollIntoView({ behavior: "smooth", block: "start" })` (ou `"auto"` se `prefers-reduced-motion: reduce`), depois aplica a classe `.anchor-highlight` por 1,6s — keyframe `anchor-highlight-pulse` em `globals.css` (um pulso sutil de `box-shadow`/fundo usando os tokens `--ring`/`--foreground`, desativado sob `prefers-reduced-motion: reduce`). `html` ganhou `scroll-behavior: smooth` (com fallback `auto` no mesmo media query).
+* **Bug corrigido durante a implementação:** o `command.tsx` gerado pelo CLI do shadcn (`npx shadcn@latest add command dialog`) não envolvia `{children}` em `<Command>` dentro do `CommandDialog` — os subcomponentes do `cmdk` (`CommandInput`/`CommandList`/…) ficavam sem o contexto/store interno e o clique no trigger quebrava em runtime (`Cannot read properties of undefined (reading 'subscribe')`). Corrigido adicionando o wrapper `<Command>{children}</Command>` em `CommandDialog` — arquivo do shadcn tratado como código do projeto, conforme o próprio modelo do shadcn/ui.
 
 ---
 
 ## 4. Backlog / Próximas Atividades
 
-Nenhum item em aberto no momento. Os itens 4.1–4.5 da versão anterior deste documento (auditoria Lighthouse, teste de regressão do Dark Mode, reavaliação do `enableSystem`, rótulo acessível do `ModeToggle` e renderização de Formação Acadêmica/Soft Skills) foram concluídos — ver changelog (seção 6) para detalhes de cada um.
+Nenhum item em aberto no momento. O item 4.1 da versão anterior deste documento (ancoragem de seções + busca global fluida) foi concluído — ver changelog (seção 6) para detalhes.
 
 ---
 
@@ -67,6 +74,28 @@ Nenhum item em aberto no momento. Os itens 4.1–4.5 da versão anterior deste d
 ---
 
 ## 6. Changelog
+
+### 2026-07-09 — Busca Global e Navegação Ancorada (V1.2 → V1.3)
+Execução completa do backlog 4.1 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3.2 e 3.6).
+
+**Arquivos novos:**
+* `src/components/custom/search-command.tsx` — trigger de busca + `CommandDialog`, atalho `Ctrl+K`/`Cmd+K`, agrupa resultados por seção.
+* `src/lib/search-index.ts` — índice de busca derivado de `cvData` (perfil, métricas, experiências, competências técnicas, soft skills, formação, monitorias).
+* `src/lib/scroll-to-section.ts` — scroll suave até a âncora + destaque temporário, com guarda de `prefers-reduced-motion`.
+* `src/components/ui/command.tsx`, `dialog.tsx`, `input.tsx`, `input-group.tsx`, `textarea.tsx` — instalados via `npx shadcn@latest add command dialog`.
+* `tests/search-navigation.spec.ts` — abertura via botão/atalho, filtragem, navegação até a seção, fechamento via Esc, estado vazio.
+
+**Arquivos alterados:**
+* `hero.tsx`, `metrics-dashboard.tsx`, `experience-timeline.tsx`, `skills-matrix.tsx`, `soft-skills.tsx`, `academic-background.tsx`, `academic-monitoring.tsx` — adicionado `id` estável + `scroll-mt-20` na seção raiz de cada componente.
+* `site-header.tsx` — `SearchCommand` adicionado ao lado do `ModeToggle`; layout mudou de `justify-end` para `justify-between`.
+* `globals.css` — `scroll-behavior: smooth` em `html`; keyframe `anchor-highlight-pulse` + classe `.anchor-highlight`; ambos desativados sob `prefers-reduced-motion: reduce`.
+* `package.json` / `pnpm-lock.yaml` — dependências do `cmdk` e dos componentes shadcn instalados.
+
+**Bug corrigido:** `command.tsx` gerado pelo CLI do shadcn não envolvia os filhos do `CommandDialog` em `<Command>`, quebrando em runtime ao abrir o overlay (`Cannot read properties of undefined (reading 'subscribe')`) — ver detalhe em 3.6.
+
+**Verificação realizada:** `pnpm lint` e `pnpm build` limpos. Suíte Playwright (`pnpm test:e2e`) 12/12 passando (Desktop Chrome + Mobile Chrome). Lighthouse de Acessibilidade via `npx lighthouse` contra build de produção — 100/100 em light e 100/100 em dark (dark validado com uma instância Chromium com CDP exposto, tema pré-setado em `localStorage` antes da auditoria), zero regressão em relação à V1.2.
+
+**Commits:** a criar. Nenhum push realizado — commits permanecem locais em `main`.
 
 ### 2026-07-09 — Acessibilidade, Testes e Conteúdo Acadêmico (V1.1 → V1.2)
 Execução completa do backlog 4.1–4.5 da versão anterior deste documento (removido da seção 4; conteúdo incorporado às seções 3 e 6).
