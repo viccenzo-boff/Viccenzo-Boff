@@ -6,7 +6,7 @@ export function AcademicMonitoring() {
   return (
     <section className="bg-background">
       <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="text-sm font-semibold tracking-widest text-zinc-500 uppercase">
+        <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
           Monitorias Acadêmicas
         </h2>
 
@@ -14,12 +14,12 @@ export function AcademicMonitoring() {
           {monitorias.map((monitoria) => (
             <li
               key={monitoria.title}
-              className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-5 py-4"
+              className="flex items-center justify-between gap-4 rounded-lg border border-border px-5 py-4"
             >
-              <span className="text-sm font-medium text-zinc-900">
+              <span className="text-sm font-medium text-foreground">
                 {monitoria.title}
               </span>
-              <span className="text-xs font-medium text-zinc-500">
+              <span className="text-xs font-medium text-muted-foreground">
                 {monitoria.period}
               </span>
             </li>

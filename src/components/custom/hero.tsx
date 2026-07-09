@@ -23,23 +23,23 @@ export function Hero() {
   const phoneHref = `tel:+55${contact.phone.replace(/\D/g, "")}`;
 
   return (
-    <header className="border-b border-zinc-200 bg-background">
+    <header className="border-b border-border bg-background">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-20 sm:py-28 lg:px-8">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-500">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <MapPin className="size-4" aria-hidden="true" />
           <span>{contact.location}</span>
         </div>
 
         <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-semibold tracking-tight text-balance text-zinc-900 sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl">
             {contact.name}
           </h1>
-          <p className="text-lg font-medium text-zinc-500 sm:text-xl lg:text-2xl">
+          <p className="text-lg font-medium text-muted-foreground sm:text-xl lg:text-2xl">
             {contact.targetRole}
           </p>
         </div>
 
-        <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-lg">
+        <p className="max-w-2xl text-base leading-relaxed text-foreground/80 sm:text-lg">
           {summary}
         </p>
 
