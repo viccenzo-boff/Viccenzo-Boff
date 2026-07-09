@@ -1,0 +1,28 @@
+import { cvData } from "@/data/cv";
+
+export function SoftSkills() {
+  const { softSkills } = cvData;
+
+  return (
+    <section className="border-b border-border bg-background">
+      <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
+        <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+          Competências Comportamentais
+        </h2>
+
+        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
+          {softSkills.map((skill) => (
+            <div key={skill.title}>
+              <h3 className="text-sm font-semibold text-foreground">
+                {skill.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                {skill.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
