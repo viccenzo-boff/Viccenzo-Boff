@@ -2,7 +2,7 @@
 
 Portfólio/currículo digital de página única: Next.js (App Router) + TypeScript estrito + Tailwind CSS v4 + shadcn/ui, com deploy na Vercel.
 
-A documentação viva do produto e da arquitetura está em [`.claudecode/prd.md`](.claudecode/prd.md).
+A documentação viva está em [`.claudecode/prd.md`](.claudecode/prd.md) (produto) e [`.claudecode/architecture.md`](.claudecode/architecture.md) (arquitetura).
 
 ## Desenvolvimento
 
