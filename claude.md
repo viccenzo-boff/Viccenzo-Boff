@@ -36,6 +36,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 | `pnpm test:e2e` | Suíte Playwright — 26 testes contra o build de produção (porta 3100) |
 | `pnpm build` | `verify:cv-pdf && next build` (falha se o PDF estiver dessincronizado) |
 | `pnpm generate:cv-pdf` | (Re)gera o PDF + manifesto de hash (requer Chromium do Playwright local) |
+| `pnpm generate:readme-screenshots` | (Re)gera os screenshots do README em `docs/screenshots/` (requer site rodando via `pnpm start`) |
 
 ## 5. Definição de Pronto
 

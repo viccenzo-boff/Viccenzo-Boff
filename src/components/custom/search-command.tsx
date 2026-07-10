@@ -19,6 +19,8 @@ const SECTION_ORDER = [
   "inicio",
   "painel-de-impacto",
   "experiencia-profissional",
+  "projetos",
+  "tecnologias",
   "matriz-de-competencias",
   "competencias-comportamentais",
   "formacao-academica",

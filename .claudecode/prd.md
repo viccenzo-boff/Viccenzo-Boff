@@ -14,7 +14,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 3. Status Atual
 
-**V1.9 em produção** (`3987f2e`; deploy validado em 2026-07-10 — home e `/curriculo-viccenzo-boff.pdf` respondendo 200 em `viccenzo-boff.vercel.app`). Pendências e backlog: §8.
+**V1.9 em produção** (`3987f2e`; deploy validado em 2026-07-10 — home e `/curriculo-viccenzo-boff.pdf` respondendo 200 em `viccenzo-boff.vercel.app`). **V2.0 pronta no working tree** (READMEs-vitrine B4/B7 + correção da busca), triada e confirmada pelo usuário em 2026-07-10 — aguardando apenas o commit. Pendências e backlog: §8.
 
 ## 4. Requisitos Funcionais
 
@@ -56,10 +56,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 8. Pendências e Backlog
 
-**Tarefas de backlog:**
-
-* **B4 — README do Birthday.ai** (repositório externo `github.com/viccenzo-boff/birthday.ai`): garantir README apresentável (o que faz, arquitetura, stack, screenshots — mitigam a demo atrás de login, instruções). Pré-requisito de qualidade do CTA "Ver no GitHub".
-* **B7 (candidata, não especificada):** reescrever o `README.md` deste repositório como vitrine para recrutadores (screenshots, arquitetura resumida) — o repositório também é peça do portfólio.
+*Sem pendências abertas.* A triagem da entrega V2.0 (B4 + B7 + correção da busca) foi concluída pelo usuário em 2026-07-10 — as três decisões autônomas foram confirmadas e o README do Birthday.ai foi revisado (ver §9).
 
 ## 9. Histórico de Versões
 
@@ -74,3 +71,4 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | V1.7 | Botão WhatsApp substitui telefone | `6e62b1b` |
 | V1.8 | Backlog B1–B5: PDF do currículo, Idiomas, evidência de oratória, seção Projetos (Birthday.ai), seção Tecnologias — decisões autônomas (B2/B3/B5) validadas pelo usuário em 2026-07-10 | `357a2fd` |
 | V1.9 | B6: PDF versionado + guarda de hash no build (inversão após falha do deploy `dpl_AdGf4qFGpnuyaByzyHxCbzZRdBsx`) | `3987f2e` |
+| V2.0 | B4 (README-vitrine do Birthday.ai, repo externo) + B7 (README-vitrine deste repo com screenshots automatizados) + correção do bug da busca (Projetos/Tecnologias fora do `SECTION_ORDER`) — decisões autônomas confirmadas e README externo revisado pelo usuário em 2026-07-10 | *(aguardando commit)* |

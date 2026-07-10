@@ -25,14 +25,17 @@ Globais: `lang="pt-BR"` e `suppressHydrationWarning` no `<html>` (tema aplicado 
 
 ```text
 ├── CLAUDE.md                        # Regras de comportamento do Claude Code
-├── README.md                        # Vitrine mínima + instruções de desenvolvimento
+├── README.md                        # Vitrine para recrutadores: screenshots, destaques, stack e instruções de desenvolvimento
 ├── .claudecode/                     # Documentação de contexto (prd.md, architecture.md, cv_base.md)
+├── docs/
+│   └── screenshots/                 # Screenshots do README, gerados por scripts/readme-screenshots.ts
 ├── public/
 │   └── curriculo-viccenzo-boff.pdf  # PDF versionado no git, gerado localmente (§7)
 ├── scripts/
 │   ├── cv-print-html.tsx            # Helper compartilhado: render do HTML de impressão + SHA-256 + validador do manifesto
 │   ├── generate-cv-pdf.tsx          # Gera o PDF (Chromium do Playwright) + manifesto
 │   ├── verify-cv-pdf.tsx            # Guarda de sincronização (sem Chromium) — encadeada no build
+│   ├── readme-screenshots.ts        # Screenshots do README (`pnpm generate:readme-screenshots`, requer site em pnpm start)
 │   └── cv-pdf.manifest.json         # Hash SHA-256 do HTML de impressão da última geração
 ├── src/
 │   ├── app/
@@ -158,3 +161,4 @@ Todo o conteúdo do Hero é centralizado (`text-center`/`justify-center`) — re
 | `cv-print-document.tsx` | Carrega disable pontual de `@next/next/no-head-element` (documento HTML autônomo, fora do Next). |
 | `pnpm-workspace.yaml` | Build do `esbuild` (dependência do `tsx`) aprovado em `allowBuilds` — não remover. |
 | `layout.tsx` | `suppressHydrationWarning` no `<html>` é necessário (tema aplicado via script pré-hidratação). |
+| `search-command.tsx` | `SECTION_ORDER` é a lista **manual** de seções renderizadas no overlay — ao criar uma seção nova, incluir o `id` dela aqui, senão os itens existem no índice mas nunca aparecem na busca (bug que ocultou Projetos e Tecnologias na V1.8). |
