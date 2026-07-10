@@ -6,7 +6,7 @@ export function MetricsDashboard() {
 
   return (
     <section id="painel-de-impacto" className="scroll-mt-20 border-b border-border bg-muted">
-      <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-20 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-20 lg:px-8">
         <h2 className="text-sm font-semibold tracking-widest text-foreground/70 uppercase">
           Painel de Impacto
         </h2>

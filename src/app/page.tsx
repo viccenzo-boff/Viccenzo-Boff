@@ -1,4 +1,5 @@
 import { AcademicBackground } from "@/components/custom/academic-background";
+import { AnimatedScrollLine } from "@/components/custom/animated-scroll-line";
 import { AcademicMonitoring } from "@/components/custom/academic-monitoring";
 import { ExperienceTimeline } from "@/components/custom/experience-timeline";
 import { Hero } from "@/components/custom/hero";
@@ -10,16 +11,19 @@ import { Technologies } from "@/components/custom/technologies";
 
 export default function Home() {
   return (
-    <main>
-      <Hero />
-      <MetricsDashboard />
-      <ExperienceTimeline />
-      <Projects />
-      <Technologies />
-      <SkillsMatrix />
-      <SoftSkills />
-      <AcademicBackground />
-      <AcademicMonitoring />
-    </main>
+    <>
+      <main>
+        <Hero />
+        <MetricsDashboard />
+        <ExperienceTimeline />
+        <Projects />
+        <Technologies />
+        <SkillsMatrix />
+        <SoftSkills />
+        <AcademicBackground />
+        <AcademicMonitoring />
+      </main>
+      <AnimatedScrollLine />
+    </>
   );
 }

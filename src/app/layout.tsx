@@ -19,7 +19,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
-      <body>
+      {/* relative: âncora do overlay absoluto da Scroll Progress Line (cobre o documento inteiro) */}
+      <body className="relative">
         <ThemeProvider>
           <SiteHeader />
           {children}

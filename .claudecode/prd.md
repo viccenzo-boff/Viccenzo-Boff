@@ -14,7 +14,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 3. Status Atual
 
-**V1.9 em produção** (`3987f2e`; deploy validado em 2026-07-10 — home e `/curriculo-viccenzo-boff.pdf` respondendo 200 em `viccenzo-boff.vercel.app`). **V2.0 pronta no working tree** (READMEs-vitrine B4/B7 + correção da busca), triada e confirmada pelo usuário em 2026-07-10 — aguardando apenas o commit. Pendências e backlog: §8.
+**V2.0 em produção** (commitada e enviada em `184c002`, que coincide com `origin/main`; READMEs-vitrine B4/B7 + correção da busca, triados pelo usuário em 2026-07-10). **V2.1 pronta no working tree** (B8 — Scroll Progress Line, entregue sob carta branca e revisada com feedback do usuário em 2026-07-10) — aguardando triagem dos itens remanescentes e commit; relatório em §8.
 
 ## 4. Requisitos Funcionais
 
@@ -25,13 +25,14 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | RF3 | **Busca global** (`Ctrl+K`/`Cmd+K` + botão no header) cobrindo todo o conteúdo de `cvData`, com navegação ancorada suave, highlight da seção-destino e respeito a `prefers-reduced-motion`. |
 | RF4 | **Tema:** light como padrão, dark disponível por alternância manual persistida. |
 | RF5 | **PDF do currículo** ATS-friendly, com conteúdo sempre idêntico ao site (guarda de sincronização no build) e acessível por link estático, sem JavaScript. |
+| RF6 | **Scroll Progress Line:** linha decorativa em SVG (gradiente roxo→azul→vermelho, glow com pulse) que serpenteia o documento inteiro **atrás do texto** e é desenhada progressivamente na altura do scroll, com física de spring; overlay não interativo, visível em light e dark, estática sob `prefers-reduced-motion`. Detalhes técnicos: `architecture.md` §5.5. |
 
 ## 5. Requisitos Não-Funcionais
 
 * **Acessibilidade:** Lighthouse Acessibilidade 100/100 em light e dark (baseline permanente); contrastes ≥4,5:1; WCAG 2.5.3 (*Label in Name*) nos CTAs.
 * **Mobile first:** validado em 375px e 1280px pela suíte e2e.
 * **Performance e custo:** site estático/serverless na Vercel, zero scripts externos, custo zero de infraestrutura.
-* **Qualidade de engenharia:** TypeScript estrito, lint zero warnings, 26 testes e2e passando (Definição de Pronto: `CLAUDE.md` §5).
+* **Qualidade de engenharia:** TypeScript estrito, lint zero warnings, 28 testes e2e passando (Definição de Pronto: `CLAUDE.md` §5).
 
 ## 6. Decisões de Produto (registro permanente)
 
@@ -47,6 +48,8 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | Itens conceituais permanecem em Bancos de Dados | "Modelagem relacional" e "Controle de concorrência" são competências reais e keywords de ATS; validado pelo usuário (fecha B5, incl. rótulo "Orquestração de LLM (Gemini 2.5 Flash)"). |
 | Sem badge de idiomas no Hero | Preserva o Hero minimalista; idiomas vivem na seção "Formação Acadêmica e Idiomas" (fecha B2). |
 | Ordem do PDF ≠ ordem da tela | O PDF segue ordem de recrutador (contatos → resumo → impacto → experiência → …). |
+| Scroll Progress Line em fluxo do documento, **atrás do texto** e acima dos fundos | Direção dada pelo usuário na revisão da V2.1 (overlay fixo na viewport e sobre o texto foi rejeitado). Como as seções pintam fundos sólidos, a linha vive num sanduíche de z-index — fundo da seção → linha `z-0` → conteúdo `relative z-10` — percorrendo a página inteira e desenhada na altura do scroll. Mecanismo e invariante para seções novas: `architecture.md` §5.5. |
+| Gradiente roxo→azul→vermelho na Scroll Progress Line | Única exceção deliberada à paleta monocromática zinc, pedida pelo usuário como assinatura visual. Expressa em tokens dedicados `--scroll-line-*` (light/dark) em `globals.css`; todo o restante do site permanece monocromático. |
 
 ## 7. Fora de Escopo
 
@@ -56,7 +59,17 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 8. Pendências e Backlog
 
-*Sem pendências abertas.* A triagem da entrega V2.0 (B4 + B7 + correção da busca) foi concluída pelo usuário em 2026-07-10 — as três decisões autônomas foram confirmadas e o README do Birthday.ai foi revisado (ver §9).
+*B8 (Scroll Progress Line) foi entregue em 2026-07-10 sob carta branca e revisada no mesmo dia com feedback do usuário (linha em fluxo do documento, atrás do texto) — virou a V2.1 (§9); detalhes técnicos em `architecture.md` §5.5.* Itens remanescentes aguardando triagem:
+
+### Relatório da entrega V2.1 (2026-07-10, revisada com feedback do usuário)
+
+**2. Pendências que só o usuário pode resolver:**
+
+* **Revisar visualmente e commitar a V2.1.** Rodar `pnpm dev`, conferir a linha nos dois temas (e no celular, se possível) e commitar. Sugestão de mensagem: `feat(ui): add organic scroll progress line drawn along the page behind content`.
+
+**3. Novas tarefas descobertas durante a execução:**
+
+* **Screenshots do README não mostram a linha.** O script captura tudo no topo da página, onde a linha ainda não foi desenhada (pathLength 0) — por isso **não** foram regenerados (diff binário sem delta visual). Recomendação: se quiser exibir a linha no README, adicionar ao `scripts/readme-screenshots.ts` uma captura em meio de scroll com espera do spring; caso contrário, descartar.
 
 ## 9. Histórico de Versões
 
@@ -71,4 +84,5 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | V1.7 | Botão WhatsApp substitui telefone | `6e62b1b` |
 | V1.8 | Backlog B1–B5: PDF do currículo, Idiomas, evidência de oratória, seção Projetos (Birthday.ai), seção Tecnologias — decisões autônomas (B2/B3/B5) validadas pelo usuário em 2026-07-10 | `357a2fd` |
 | V1.9 | B6: PDF versionado + guarda de hash no build (inversão após falha do deploy `dpl_AdGf4qFGpnuyaByzyHxCbzZRdBsx`) | `3987f2e` |
-| V2.0 | B4 (README-vitrine do Birthday.ai, repo externo) + B7 (README-vitrine deste repo com screenshots automatizados) + correção do bug da busca (Projetos/Tecnologias fora do `SECTION_ORDER`) — decisões autônomas confirmadas e README externo revisado pelo usuário em 2026-07-10 | *(aguardando commit)* |
+| V2.0 | B4 (README-vitrine do Birthday.ai, repo externo) + B7 (README-vitrine deste repo com screenshots automatizados) + correção do bug da busca (Projetos/Tecnologias fora do `SECTION_ORDER`) — decisões autônomas confirmadas e README externo revisado pelo usuário em 2026-07-10 | `168c063`, `184c002` |
+| V2.1 | B8: Scroll Progress Line (lib `motion`, tokens `--scroll-line-*`, reduced-motion, +1 teste e2e → 28) — entregue sob carta branca e revisada com feedback do usuário no mesmo dia: linha em fluxo do documento, atrás do texto, via sanduíche de z-index (`architecture.md` §5.5); itens remanescentes em §8 | *(aguardando commit)* |

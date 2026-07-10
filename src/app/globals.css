@@ -72,6 +72,10 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
+    --scroll-line-from: hsl(262 83% 58%);
+    --scroll-line-via: hsl(221 83% 53%);
+    --scroll-line-to: hsl(0 72% 51%);
+    --scroll-line-opacity: 0.5;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -101,6 +105,10 @@
     --border: hsl(240 3.7% 15.9%);
     --input: hsl(240 3.7% 15.9%);
     --ring: hsl(240 4.9% 83.9%);
+    --scroll-line-from: hsl(255 92% 76%);
+    --scroll-line-via: hsl(213 94% 68%);
+    --scroll-line-to: hsl(0 91% 71%);
+    --scroll-line-opacity: 0.6;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -144,11 +152,29 @@
   animation: anchor-highlight-pulse 1.6s ease-out;
 }
 
+@keyframes scroll-line-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.scroll-line-glow {
+  filter: blur(6px);
+  animation: scroll-line-pulse 5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
     }
   .anchor-highlight {
+    animation: none;
+  }
+  .scroll-line-glow {
     animation: none;
   }
 }

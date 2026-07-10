@@ -1,6 +1,6 @@
 # Arquitetura — Currículo Técnico Premium
 
-> Fonte de verdade **viva** da arquitetura técnica. Estado: V1.9 (2026-07-10). Papel dos demais documentos: `CLAUDE.md` §1.
+> Fonte de verdade **viva** da arquitetura técnica. Estado: V2.1 (2026-07-10). Papel dos demais documentos: `CLAUDE.md` §1.
 
 ## 1. Stack
 
@@ -12,6 +12,7 @@
 | UI | shadcn/ui (baseColor `zinc`, estilo `radix-vega`) | Componentes locais em `src/components/ui`, instalados via CLI |
 | Tema | next-themes | Classe `dark` no `<html>`, persistida em `localStorage` (§5.1) |
 | Busca | cmdk + Radix `Dialog` | §6 |
+| Animação | motion 12.x (sucessor do framer-motion) | Usada exclusivamente na Scroll Progress Line (§5.5): `useScroll`/`useSpring`/`motion.path` |
 | Ícones | lucide-react + SVGs de marca próprios | GitHub/WhatsApp em `brand-icons.tsx` (lucide não tem ícones de marca) |
 | Fonte | Inter via `next/font/google` | Variável `--font-sans` |
 | Pacotes | pnpm | Build do `esbuild` (dep. do `tsx`) aprovado em `pnpm-workspace.yaml` (`allowBuilds`) |
@@ -46,7 +47,7 @@ Globais: `lang="pt-BR"` e `suppressHydrationWarning` no `<html>` (tema aplicado 
 │   │   └── icon.tsx                 # Favicon dinâmico (ImageResponse)
 │   ├── components/
 │   │   ├── ui/                      # shadcn/ui via CLI: badge, button, card, command, dialog, dropdown-menu, input, input-group, separator, textarea
-│   │   ├── custom/                  # Componentes de negócio: 9 seções + site-header, search-command, mode-toggle, email-contact-menu, brand-icons
+│   │   ├── custom/                  # Componentes de negócio: 9 seções + site-header, search-command, mode-toggle, email-contact-menu, brand-icons, animated-scroll-line
 │   │   └── print/
 │   │       └── cv-print-document.tsx # Template de impressão do PDF (§7.4)
 │   ├── data/
@@ -73,7 +74,7 @@ Globais: `lang="pt-BR"` e `suppressHydrationWarning` no `<html>` (tema aplicado 
 
 ### 3.2 Seções
 
-`src/app/page.tsx` compõe 9 seções, nesta ordem, cada uma um componente isolado em `src/components/custom/`, com `id` HTML estável (âncoras da busca, §6) e `scroll-mt-20` (compensa o header sticky). Fundos alternam `bg-background`/`bg-muted` — regra de contraste em §5.3.
+`src/app/page.tsx` compõe 9 seções, nesta ordem, cada uma um componente isolado em `src/components/custom/`, com `id` HTML estável (âncoras da busca, §6) e `scroll-mt-20` (compensa o header sticky). Fundos alternam `bg-background`/`bg-muted` — regra de contraste em §5.3. Além das seções, `page.tsx` renderiza a Scroll Progress Line como irmã do `<main>` (§5.5).
 
 | # | Componente | `id` | Fundo | Conteúdo |
 | --- | --- | --- | --- | --- |
@@ -118,6 +119,16 @@ Título `h2` sobre `bg-muted` **não pode** usar `text-muted-foreground` (4,39:1
 
 Todo o conteúdo do Hero é centralizado (`text-center`/`justify-center`) — resolve o vazio à direita em telas >1280px. Escopo restrito ao Hero: as demais 8 seções ficam alinhadas à esquerda dentro do mesmo container `mx-auto max-w-5xl`.
 
+### 5.5 Scroll Progress Line (`animated-scroll-line.tsx`)
+
+Linha decorativa em SVG que serpenteia o **documento inteiro** (8 travessias ≈ uma por seção) e é "desenhada" progressivamente na altura em que o usuário está conforme o scroll (client component; único consumidor da lib motion).
+
+* **Pilha visual (sanduíche de z-index):** overlay `absolute inset-0` + `z-0` + `pointer-events-none` + `overflow-hidden` + `aria-hidden="true"`, ancorado no `<body className="relative">` e montado como irmão do `<main>`. A linha fica **acima dos fundos sólidos** das seções (elementos não-posicionados) e **atrás do texto**: o wrapper interno (`mx-auto max-w-5xl…`) de cada uma das 9 seções carrega `relative z-10`. Header sticky e overlays (`z-50`) ficam acima de tudo. **Invariante para seções novas:** fundo na `<section>` (não-posicionada) + conteúdo no wrapper `relative z-10` — sem isso, o fundo esconde a linha ou a linha cobre o texto (§9).
+* **Geometria:** o path é gerado em pixels reais do documento — o container é medido por `ResizeObserver` e o `viewBox` casa 1:1 com o tamanho (escala uniforme: espessura constante e normalização do `pathLength` preservada). Nós definidos em frações da página, com tangentes verticais e pontos de controle espelhados (curva C1-contínua, sem quinas). O SVG só renderiza após a primeira medição (no SSR sai apenas o container vazio).
+* **Animação:** `useScroll` + `useSpring` alimentam `pathLength` (0→1) em dois `motion.path` — camada de glow (traço largo, `blur` + keyframe `scroll-line-pulse` de opacidade em `globals.css`) e linha principal fina por cima.
+* **Cores:** gradiente vertical roxo→azul→vermelho via tokens dedicados `--scroll-line-from/via/to` + `--scroll-line-opacity` em `globals.css` (variantes light/dark) — exceção cromática deliberada à paleta monocromática (PRD §6).
+* **Reduced motion:** guard com `useSyncExternalStore` sobre `matchMedia` (mesmo idioma do `mode-toggle`, §9) troca para um `<path>` estático completo, sem draw nem pulse; o keyframe também é desativado na media query de `globals.css`.
+
 ## 6. Busca Global (Ctrl+K) e Navegação Ancorada
 
 * **Trigger:** botão no `SiteHeader` (`aria-label="Pesquisar no currículo"`, ícone de lupa, dica "Ctrl K" oculta em telas `sm-`) + atalho global `Ctrl+K`/`Cmd+K` (listener em `document`, registrado por `SearchCommand`).
@@ -147,8 +158,9 @@ Todo o conteúdo do Hero é centralizado (`text-center`/`justify-center`) — re
 | `tests/search-navigation.spec.ts` | Abertura via botão/atalho, filtragem, navegação até a seção, Esc, estado vazio | 3 |
 | `tests/hero-contact.spec.ts` | Menu de e-mail (4 opções, URLs Gmail `su=`/Outlook `subject=`, `mailto:` com assunto, clipboard via `grantPermissions`) + WhatsApp (`wa.me` com `text=` codificado, nova aba) | 4 |
 | `tests/cv-download.spec.ts` | Botões de download (Hero e header), asset 200 + `content-type: application/pdf` + magic bytes `%PDF-` | 3 |
+| `tests/scroll-line.spec.ts` | Scroll Progress Line: overlay decorativo (`aria-hidden`, `pointer-events: none`, `position: fixed`) e draw progressivo do path com o scroll (`stroke-dasharray` >0,8 no fim da página) | 1 |
 
-13 testes × 2 projetos (Desktop Chrome 1280px e Mobile Chrome 375px via `devices["Pixel 7"]`) = **26**. `playwright.config.ts` sobe o build de produção via `webServer` na porta 3100 — o build já exercita a guarda do PDF.
+14 testes × 2 projetos (Desktop Chrome 1280px e Mobile Chrome 375px via `devices["Pixel 7"]`) = **28**. `playwright.config.ts` sobe o build de produção via `webServer` na porta 3100 — o build já exercita a guarda do PDF.
 
 ## 9. Armadilhas Conhecidas (manutenção)
 
@@ -162,3 +174,5 @@ Todo o conteúdo do Hero é centralizado (`text-center`/`justify-center`) — re
 | `pnpm-workspace.yaml` | Build do `esbuild` (dependência do `tsx`) aprovado em `allowBuilds` — não remover. |
 | `layout.tsx` | `suppressHydrationWarning` no `<html>` é necessário (tema aplicado via script pré-hidratação). |
 | `search-command.tsx` | `SECTION_ORDER` é a lista **manual** de seções renderizadas no overlay — ao criar uma seção nova, incluir o `id` dela aqui, senão os itens existem no índice mas nunca aparecem na busca (bug que ocultou Projetos e Tecnologias na V1.8). |
+| `animated-scroll-line.tsx` | **Não** usar `vector-effect="non-scaling-stroke"` junto com draw de `pathLength`: no Chromium o `stroke-dasharray` passa a ser medido em px de tela ao longo do path transformado e ignora a normalização do `pathLength` — a linha vira centenas de tracinhos repetidos. |
+| Seções novas em `page.tsx` | Respeitar o sanduíche de z-index da Scroll Progress Line (§5.5): fundo na `<section>` não-posicionada, conteúdo no wrapper `relative z-10`. Também incluir o `id` no `SECTION_ORDER` (linha acima). |
