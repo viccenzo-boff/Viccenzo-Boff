@@ -1,3 +1,5 @@
+import { Presentation } from "lucide-react";
+
 import { cvData } from "@/data/cv";
 
 export function SoftSkills() {
@@ -19,6 +21,12 @@ export function SoftSkills() {
               <p className="mt-2 text-sm leading-relaxed text-foreground/80">
                 {skill.description}
               </p>
+              {skill.evidence && (
+                <p className="mt-3 flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                  <Presentation className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                  <span>{skill.evidence}</span>
+                </p>
+              )}
             </div>
           ))}
         </div>

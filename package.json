@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "generate:cv-pdf": "tsx scripts/generate-cv-pdf.tsx",
+    "build": "pnpm generate:cv-pdf && next build",
+    "vercel-build": "playwright install chromium && pnpm build",
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test"
@@ -32,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.0",
     "typescript": "^5"
   }
 }

@@ -70,18 +70,56 @@ export const cvData: CVData = {
       ],
     },
   ],
+  projects: [
+    {
+      id: "birthday-ai",
+      name: "Birthday.ai",
+      description: "Sistema full-stack de mensageria que automatiza felicitações de aniversário em grupos: orquestra o Gemini 2.5 Flash para gerar mensagens personalizadas com IA e as envia via WhatsApp.",
+      stack: ["TypeScript", "Node.js", "Next.js", "Gemini 2.5 Flash", "WhatsApp", "Vercel"],
+      highlights: [
+        "Orquestração do Gemini 2.5 Flash para geração automática de mensagens de aniversário personalizadas por destinatário.",
+        "Integração com WhatsApp via biblioteca não oficial — decisão deliberada de arquitetura, avaliada frente à API oficial do Meta, para operar com custo zero.",
+        "Aplicação full-stack em TypeScript (backend + frontend Next.js) com painel administrativo, publicada na Vercel.",
+        "Processo de desenvolvimento disciplinado com Spec-Driven Development (SDD) e ciclo Plan–Execute–Review–Test (PERT), da especificação à homologação.",
+      ],
+      repoUrl: "https://github.com/viccenzo-boff/birthday.ai",
+      liveUrl: "https://birthday-ai-three.vercel.app",
+    },
+  ],
   education: {
     degree: "Sistemas de Informação",
     institution: "Unoesc",
     status: "Cursando 6º Período",
     completionYear: "2027",
   },
+  languages: [
+    { name: "Inglês", level: "Avançado" },
+    { name: "Português", level: "Nativo" },
+  ],
   monitorias: [
     { title: "Monitor de Gerência de Projetos", period: "2026/1" },
     { title: "Monitor de Interconectividade de Computadores", period: "2025/2" },
     { title: "Monitor de Engenharia de Software", period: "2025/1" },
     { title: "Monitor de Estrutura de Dados", period: "2024/2" },
     { title: "Monitor de Algoritmos e Lógica da Programação", period: "2024/1" },
+  ],
+  technologies: [
+    {
+      category: "Linguagens e Frameworks",
+      skills: ["TypeScript", "Java", "HTML", "CSS", "Node.js", "React", "Next.js"],
+    },
+    {
+      category: "Bancos de Dados",
+      skills: ["SQL Avançado (gatilhos e procedures)", "PostgreSQL", "MariaDB", "Modelagem relacional", "Controle de concorrência"],
+    },
+    {
+      category: "Infra, Deploy e Ferramentas",
+      skills: ["Docker", "Vercel", "Supabase", "pgAdmin", "DBeaver", "Git"],
+    },
+    {
+      category: "Integrações com IA",
+      skills: ["Orquestração de LLM (Gemini 2.5 Flash)"],
+    },
   ],
   technicalSkills: [
     {
@@ -98,11 +136,7 @@ export const cvData: CVData = {
     },
     {
       category: "Desenvolvimento de Software e DevOps",
-      skills: ["Desenvolvimento web/mobile em multicamadas (MVC)", "Consumo de APIs RESTful estruturadas", "Versionamento com Git", "Práticas de escrita de código limpo (Clean Code)"],
-    },
-    {
-      category: "Bancos de Dados",
-      skills: ["Modelagem relacional", "Controle de concorrência", "Escrita de consultas em SQL Avançado (gatilhos e procedures)", "SGBD PostgreSQL"],
+      skills: ["Desenvolvimento web/mobile em multicamadas (MVC)", "Consumo de APIs RESTful estruturadas", "Práticas de escrita de código limpo (Clean Code)"],
     },
     {
       category: "Conhecimentos Fiscais e de Negócio",
@@ -111,8 +145,9 @@ export const cvData: CVData = {
   ],
   softSkills: [
     {
-      title: "Comunicação Estratégica",
-      description: "Habilidade consolidada em traduzir conceitos puramente técnicos para públicos diversos e mediar a interlocução direta entre as partes interessadas do negócio.",
+      title: "Comunicação Estratégica e Oratória",
+      description: "Habilidade consolidada em traduzir conceitos puramente técnicos para públicos diversos, mediar a interlocução direta entre as partes interessadas do negócio e conduzir apresentações para grandes grupos com desenvoltura.",
+      evidence: "Palestra/workshop sobre o universo de Duna para ~40 pessoas na Unoesc (2026/1), além de treinamentos corporativos de comunicação e oratória para 10 colaboradores.",
     },
     {
       title: "Trabalho em Equipe e Liderança",

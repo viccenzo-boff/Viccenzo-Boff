@@ -30,14 +30,37 @@ export interface Monitoria {
   period: string;
 }
 
+export type LanguageLevel =
+  | "Básico"
+  | "Intermediário"
+  | "Avançado"
+  | "Fluente"
+  | "Nativo";
+
+export interface Language {
+  name: string;
+  level: LanguageLevel;
+}
+
 export interface SkillGroup {
   category: string;
   skills: string[];
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  stack: string[];
+  highlights: string[];
+  repoUrl: string;
+  liveUrl?: string;
+}
+
 export interface SoftSkill {
   title: string;
   description: string;
+  evidence?: string;
 }
 
 export interface ImpactMetric {
@@ -51,8 +74,11 @@ export interface CVData {
   summary: string;
   impactMetrics: ImpactMetric[];
   experiences: Experience[];
+  projects: Project[];
   education: Education;
+  languages: Language[];
   monitorias: Monitoria[];
+  technologies: SkillGroup[];
   technicalSkills: SkillGroup[];
   softSkills: SoftSkill[];
 }

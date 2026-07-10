@@ -43,11 +43,43 @@ function buildSearchIndex(): SearchIndexItem[] {
     });
   }
 
+  for (const project of cvData.projects) {
+    items.push({
+      id: `project-${project.id}`,
+      sectionId: "projetos",
+      sectionLabel: "Projetos",
+      title: project.name,
+      subtitle: project.stack.join(", "),
+      keywords: [
+        project.description,
+        ...project.stack,
+        ...project.highlights,
+        "projeto",
+        "IA",
+        "mensageria",
+        "SDD",
+        "Spec-Driven Development",
+        "PERT",
+      ],
+    });
+  }
+
+  for (const group of cvData.technologies) {
+    items.push({
+      id: `technology-group-${group.category}`,
+      sectionId: "tecnologias",
+      sectionLabel: "Tecnologias",
+      title: group.category,
+      subtitle: group.skills.join(", "),
+      keywords: group.skills,
+    });
+  }
+
   for (const group of cvData.technicalSkills) {
     items.push({
       id: `skill-group-${group.category}`,
       sectionId: "matriz-de-competencias",
-      sectionLabel: "Matriz de Competências",
+      sectionLabel: "Competências e Metodologias",
       title: group.category,
       subtitle: group.skills.join(", "),
       keywords: group.skills,
@@ -60,17 +92,30 @@ function buildSearchIndex(): SearchIndexItem[] {
       sectionId: "competencias-comportamentais",
       sectionLabel: "Competências Comportamentais",
       title: skill.title,
-      keywords: [skill.description],
+      keywords: skill.evidence
+        ? [skill.description, skill.evidence, "oratória", "palestra", "workshop", "apresentações"]
+        : [skill.description],
     });
   }
 
   items.push({
     id: "education",
     sectionId: "formacao-academica",
-    sectionLabel: "Formação Acadêmica",
+    sectionLabel: "Formação Acadêmica e Idiomas",
     title: cvData.education.degree,
     subtitle: cvData.education.institution,
     keywords: [cvData.education.status, cvData.education.completionYear],
+  });
+
+  items.push({
+    id: "languages",
+    sectionId: "formacao-academica",
+    sectionLabel: "Formação Acadêmica e Idiomas",
+    title: "Idiomas",
+    subtitle: cvData.languages
+      .map((language) => `${language.name} — ${language.level}`)
+      .join(", "),
+    keywords: cvData.languages.flatMap((language) => [language.name, language.level]),
   });
 
   for (const monitoria of cvData.monitorias) {

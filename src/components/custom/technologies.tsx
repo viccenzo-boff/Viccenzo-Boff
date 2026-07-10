@@ -1,18 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { cvData } from "@/data/cv";
 
-export function SkillsMatrix() {
-  const { technicalSkills } = cvData;
+export function Technologies() {
+  const { technologies } = cvData;
 
   return (
-    <section id="matriz-de-competencias" className="scroll-mt-20 border-b border-border bg-muted">
+    <section id="tecnologias" className="scroll-mt-20 border-b border-border bg-background">
       <div className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="text-sm font-semibold tracking-widest text-foreground/70 uppercase">
-          Competências e Metodologias
+        <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+          Tecnologias
         </h2>
 
         <div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
-          {technicalSkills.map((group) => (
+          {technologies.map((group) => (
             <div key={group.category}>
               <h3 className="text-sm font-semibold text-foreground">
                 {group.category}
