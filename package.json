@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "generate:cv-pdf": "tsx scripts/generate-cv-pdf.tsx",
-    "build": "pnpm generate:cv-pdf && next build",
-    "vercel-build": "playwright install chromium && pnpm build",
+    "verify:cv-pdf": "tsx scripts/verify-cv-pdf.tsx",
+    "build": "pnpm verify:cv-pdf && next build",
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test"

@@ -1,6 +1,9 @@
 # Architecture Document - Currículo Técnico Premium
 
+> **Nota (2026-07-10):** documento histórico da concepção do projeto, preservado como registro. **Não reflete o estado atual** (ex.: cita `tailwind.config.js`, que não existe no setup do Tailwind v4, e não cobre scripts, testes nem o pipeline do PDF). A fonte de verdade viva da stack e da arquitetura é o [PRD](prd.md), seções 3–8.
+
 ## 1. Stack Tecnológica Core
+
 * **Framework:** Next.js (Versão estável mais recente, utilizando App Router).
 * **Linguagem:** TypeScript (Strict Mode ativado para tipagem estática e segurança).
 * **Estilização:** Tailwind CSS (Utilitários de CSS para design system).
@@ -11,6 +14,7 @@
 ---
 
 ## 2. Estrutura de Pastas e Organização do Projeto
+
 O projeto seguirá o padrão de arquitetura modular do Next.js App Router:
 
 ```text
@@ -32,3 +36,4 @@ O projeto seguirá o padrão de arquitetura modular do Next.js App Router:
 ├── public/                  # Arquivos estáticos (imagens, arquivos para download como o PDF)
 ├── tailwind.config.js       # Configurações de cores, fontes e tokens de design do Tailwind
 └── tsconfig.json            # Configurações estritas do compilador TypeScript
+```

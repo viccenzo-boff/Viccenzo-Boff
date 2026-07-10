@@ -20,9 +20,6 @@
 /.next/
 /out/
 
-# artefato de build gerado por scripts/generate-cv-pdf.tsx
-/public/curriculo-viccenzo-boff.pdf
-
 # production
 /build
 
