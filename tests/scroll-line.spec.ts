@@ -25,7 +25,10 @@ test.describe("Scroll Progress Line", () => {
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
 
-    // O spring leva ~1s para acompanhar o scroll até o fim
-    await expect.poll(drawnRatio, { timeout: 10_000 }).toBeGreaterThan(0.8);
+    // A ponta desce com velocidade limitada (~120px/s — deliberadamente
+    // lento, calibrado com o usuário): basta ver o draw progredir bem além
+    // do estado inicial, sem esperar a convergência completa.
+    test.setTimeout(120_000);
+    await expect.poll(drawnRatio, { timeout: 60_000 }).toBeGreaterThan(0.5);
   });
 });
