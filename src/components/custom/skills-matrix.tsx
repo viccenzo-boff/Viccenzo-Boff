@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cvData } from "@/data/cv";
 
 export function SkillsMatrix() {
@@ -11,24 +12,28 @@ export function SkillsMatrix() {
           Competências e Metodologias
         </h2>
 
-        <div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
           {technicalSkills.map((group) => (
-            <div key={group.category}>
-              <h3 className="text-sm font-semibold text-foreground">
-                {group.category}
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {group.skills.map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="outline"
-                    className="rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground"
-                  >
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            <Card key={group.category} size="sm" className="bg-background">
+              <CardHeader>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {group.category}
+                </h3>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {group.skills.map((skill) => (
+                    <Badge
+                      key={skill}
+                      variant="outline"
+                      className="rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground"
+                    >
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

@@ -14,7 +14,7 @@ export function AcademicMonitoring() {
           {monitorias.map((monitoria) => (
             <li
               key={monitoria.title}
-              className="flex items-center justify-between gap-4 rounded-lg border border-border px-5 py-4"
+              className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background px-5 py-4"
             >
               <span className="text-sm font-medium text-foreground">
                 {monitoria.title}

@@ -25,7 +25,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | RF3 | **Busca global** (`Ctrl+K`/`Cmd+K` + botão no header) cobrindo todo o conteúdo de `cvData`, com navegação ancorada suave, highlight da seção-destino e respeito a `prefers-reduced-motion`. |
 | RF4 | **Tema:** light como padrão, dark disponível por alternância manual persistida. |
 | RF5 | **PDF do currículo** ATS-friendly, com conteúdo sempre idêntico ao site (guarda de sincronização no build) e acessível por link estático, sem JavaScript. |
-| RF6 | **Scroll Progress Line:** linha decorativa em SVG (gradiente roxo→azul→vermelho, glow com pulse) que serpenteia o documento inteiro **atrás do texto** e é desenhada progressivamente na altura do scroll, com física de spring; overlay não interativo, visível em light e dark, estática sob `prefers-reduced-motion`. Detalhes técnicos: `architecture.md` §5.5. |
+| RF6 | **Scroll Progress Line:** linha decorativa em SVG (gradiente roxo→azul→vermelho, glow com pulse) que nasce como um sublinhado sob o resumo do Hero, serpenteia o documento **atrás do texto** e é desenhada progressivamente na altura do scroll, com física de spring — a página carrega sem traço visível. Overlay não interativo, visível em light e dark; sob `prefers-reduced-motion` o desenho segue o scroll 1:1, sem spring nem pulse. Detalhes técnicos: `architecture.md` §5.5. |
 
 ## 5. Requisitos Não-Funcionais
 
@@ -50,6 +50,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | Ordem do PDF ≠ ordem da tela | O PDF segue ordem de recrutador (contatos → resumo → impacto → experiência → …). |
 | Scroll Progress Line em fluxo do documento, **atrás do texto** e acima dos fundos | Direção dada pelo usuário na revisão da V2.1 (overlay fixo na viewport e sobre o texto foi rejeitado). Como as seções pintam fundos sólidos, a linha vive num sanduíche de z-index — fundo da seção → linha `z-0` → conteúdo `relative z-10` — percorrendo a página inteira e desenhada na altura do scroll. Mecanismo e invariante para seções novas: `architecture.md` §5.5. |
 | Gradiente roxo→azul→vermelho na Scroll Progress Line | Única exceção deliberada à paleta monocromática zinc, pedida pelo usuário como assinatura visual. Expressa em tokens dedicados `--scroll-line-*` (light/dark) em `globals.css`; todo o restante do site permanece monocromático. |
+| Todo bloco de conteúdo em fundo opaco (cards) | Revisão da V2.1 (feedback do usuário): mesmo atrás do texto, a linha vazava pelos vãos das letras e através de cartões só com borda (monitorias). Experiência, tecnologias, competências, comportamentais e formação ganharam `Card`s no padrão do Painel de Impacto; monitorias ganharam `bg-background`. A linha passa atrás dos blocos e só aparece nos vãos entre eles. |
 
 ## 7. Fora de Escopo
 
@@ -59,7 +60,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 8. Pendências e Backlog
 
-*B8 (Scroll Progress Line) foi entregue em 2026-07-10 sob carta branca e revisada no mesmo dia com feedback do usuário (linha em fluxo do documento, atrás do texto) — virou a V2.1 (§9); detalhes técnicos em `architecture.md` §5.5.* Itens remanescentes aguardando triagem:
+*B8 (Scroll Progress Line) foi entregue em 2026-07-10 sob carta branca e revisada no mesmo dia em três rodadas de feedback do usuário (linha em fluxo do documento atrás do texto; nascendo como sublinhado sob o resumo do Hero; blocos de conteúdo com fundo opaco para a linha nunca atravessar letras) — virou a V2.1 (§9); detalhes técnicos em `architecture.md` §5.5.* Itens remanescentes:
 
 ### Relatório da entrega V2.1 (2026-07-10, revisada com feedback do usuário)
 
@@ -85,4 +86,4 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | V1.8 | Backlog B1–B5: PDF do currículo, Idiomas, evidência de oratória, seção Projetos (Birthday.ai), seção Tecnologias — decisões autônomas (B2/B3/B5) validadas pelo usuário em 2026-07-10 | `357a2fd` |
 | V1.9 | B6: PDF versionado + guarda de hash no build (inversão após falha do deploy `dpl_AdGf4qFGpnuyaByzyHxCbzZRdBsx`) | `3987f2e` |
 | V2.0 | B4 (README-vitrine do Birthday.ai, repo externo) + B7 (README-vitrine deste repo com screenshots automatizados) + correção do bug da busca (Projetos/Tecnologias fora do `SECTION_ORDER`) — decisões autônomas confirmadas e README externo revisado pelo usuário em 2026-07-10 | `168c063`, `184c002` |
-| V2.1 | B8: Scroll Progress Line (lib `motion`, tokens `--scroll-line-*`, reduced-motion, +1 teste e2e → 28) — entregue sob carta branca e revisada com feedback do usuário no mesmo dia: linha em fluxo do documento, atrás do texto, via sanduíche de z-index (`architecture.md` §5.5); itens remanescentes em §8 | *(aguardando commit)* |
+| V2.1 | B8: Scroll Progress Line (lib `motion`, tokens `--scroll-line-*`, reduced-motion, +1 teste e2e → 28) — entregue sob carta branca e revisada em três rodadas de feedback do usuário no mesmo dia: linha em fluxo do documento atrás do texto (sanduíche de z-index), nascendo como sublinhado sob o resumo do Hero, e todos os blocos de conteúdo em fundo opaco (cards) para a linha nunca atravessar letras (`architecture.md` §5.5); itens remanescentes em §8 | *(aguardando commit)* |

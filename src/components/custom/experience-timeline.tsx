@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cvData } from "@/data/cv";
 
 export function ExperienceTimeline() {
@@ -14,34 +15,40 @@ export function ExperienceTimeline() {
           {experiences.map((experience) => (
             <li key={experience.id} className="relative ml-8 pb-14 last:pb-0">
               <span
-                className="absolute top-1 -left-10 size-4 rounded-full border-2 border-foreground bg-background"
+                className="absolute top-5 -left-10 size-4 rounded-full border-2 border-foreground bg-background"
                 aria-hidden="true"
               />
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                <h3 className="text-lg font-semibold text-foreground">
-                  {experience.role}
-                </h3>
-                <time className="text-sm font-medium text-muted-foreground">
-                  {experience.period}
-                </time>
-              </div>
-              <p className="text-sm font-medium text-foreground/80">
-                {experience.company} · {experience.location}
-              </p>
-              <ul className="mt-4 space-y-2.5">
-                {experience.highlights.map((highlight) => (
-                  <li
-                    key={highlight}
-                    className="flex gap-3 text-sm leading-relaxed text-foreground/80"
-                  >
-                    <span
-                      className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <span>{highlight}</span>
-                  </li>
-                ))}
-              </ul>
+              <Card size="sm" className="bg-background">
+                <CardHeader>
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {experience.role}
+                    </h3>
+                    <time className="text-sm font-medium text-muted-foreground">
+                      {experience.period}
+                    </time>
+                  </div>
+                  <p className="text-sm font-medium text-foreground/80">
+                    {experience.company} · {experience.location}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2.5">
+                    {experience.highlights.map((highlight) => (
+                      <li
+                        key={highlight}
+                        className="flex gap-3 text-sm leading-relaxed text-foreground/80"
+                      >
+                        <span
+                          className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </li>
           ))}
         </ol>

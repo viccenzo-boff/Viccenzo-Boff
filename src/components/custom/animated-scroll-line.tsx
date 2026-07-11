@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { motion, useScroll, useSpring } from "motion/react";
+import { motion, useScroll, useSpring, useTransform } from "motion/react";
 
-// Nós da serpentina em frações da página (x, y). Tangentes verticais nos nós e
-// pontos de controle espelhados entre segmentos — a curva é C1-contínua, sem quinas.
-// 8 travessias ≈ uma por seção da página.
+// A linha nasce como um sublinhado sob o resumo do Hero (~7,5% do documento),
+// sai na horizontal e mergulha na serpentina. Nós em frações da página (x, y),
+// com tangentes verticais e pontos de controle espelhados — curva C1-contínua,
+// sem quinas. 8 travessias ≈ uma por seção da página.
+const START: readonly [number, number] = [0.16, 0.108];
+
 const NODES: ReadonlyArray<readonly [number, number]> = [
-  [0.12, -0.02],
-  [0.9, 0.12],
-  [0.08, 0.25],
-  [0.92, 0.38],
-  [0.1, 0.51],
+  [0.9, 0.185],
+  [0.08, 0.28],
+  [0.92, 0.4],
+  [0.1, 0.52],
   [0.88, 0.64],
   [0.06, 0.77],
   [0.94, 0.9],
@@ -19,7 +21,10 @@ const NODES: ReadonlyArray<readonly [number, number]> = [
 ];
 
 // Metade do vão vertical entre nós — controla a abertura de cada curva
-const CONTROL_OFFSET = 0.065;
+const CONTROL_OFFSET = 0.06;
+
+// Alcance horizontal da tangente de saída do sublinhado inicial (fração da largura)
+const START_PULL = 0.4;
 
 const GRADIENT_ID = "scroll-line-gradient";
 
@@ -31,18 +36,21 @@ interface OverlaySize {
 // O path é gerado em pixels reais do documento (viewBox 1:1): escala uniforme
 // mantém a espessura constante e preserva a normalização do pathLength no draw.
 function buildPathD({ width, height }: OverlaySize): string {
-  const segments: string[] = [];
+  const [startX, startY] = START;
+  const segments = [`M ${startX * width} ${startY * height}`];
   let previous: readonly [number, number] | null = null;
   for (const node of NODES) {
     const [x, y] = node;
+    const control2 = `${x * width} ${(y - CONTROL_OFFSET) * height}`;
     if (previous === null) {
-      segments.push(`M ${x * width} ${y * height}`);
+      // Saída horizontal (o sublinhado do Hero) rumo à primeira curva vertical
+      segments.push(
+        `C ${(startX + START_PULL) * width} ${startY * height}, ${control2}, ${x * width} ${y * height}`,
+      );
     } else {
       const [previousX, previousY] = previous;
-      const control1Y = (previousY + CONTROL_OFFSET) * height;
-      const control2Y = (y - CONTROL_OFFSET) * height;
       segments.push(
-        `C ${previousX * width} ${control1Y}, ${x * width} ${control2Y}, ${x * width} ${y * height}`,
+        `C ${previousX * width} ${(previousY + CONTROL_OFFSET) * height}, ${control2}, ${x * width} ${y * height}`,
       );
     }
     previous = node;
@@ -73,11 +81,18 @@ export function AnimatedScrollLine() {
     getServerPrefersReducedMotion,
   );
   const { scrollYProgress } = useScroll();
-  const pathLength = useSpring(scrollYProgress, {
+  const smoothedProgress = useSpring(scrollYProgress, {
     stiffness: 90,
     damping: 30,
     restDelta: 0.001,
   });
+  // Sob reduced motion o desenho segue o scroll 1:1 (progresso acionado pelo
+  // usuário, não animação autônoma) — sem a inércia do spring; o pulse do glow
+  // é desativado pela media query em globals.css.
+  const pathLength = prefersReducedMotion ? scrollYProgress : smoothedProgress;
+  // Sem isso, o linecap redondo deixa um ponto visível no início do path
+  // mesmo com pathLength 0 — o traço só aparece quando o desenho começa.
+  const strokeOpacity = useTransform(pathLength, [0, 0.01], [0, 1]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -127,24 +142,21 @@ export function AnimatedScrollLine() {
               <stop offset="100%" style={{ stopColor: "var(--scroll-line-to)" }} />
             </linearGradient>
           </defs>
-          {prefersReducedMotion ? (
-            <path {...sharedPathProps} strokeWidth={2.5} data-testid="scroll-progress-path" />
-          ) : (
-            <>
-              <motion.path
-                {...sharedPathProps}
-                strokeWidth={7}
-                className="scroll-line-glow"
-                style={{ pathLength }}
-              />
-              <motion.path
-                {...sharedPathProps}
-                strokeWidth={2.5}
-                style={{ pathLength }}
-                data-testid="scroll-progress-path"
-              />
-            </>
-          )}
+          {/* O fade fica no <g>: a animação CSS do pulse já ocupa a opacity do path */}
+          <motion.g style={{ opacity: strokeOpacity }}>
+            <motion.path
+              {...sharedPathProps}
+              strokeWidth={7}
+              className="scroll-line-glow"
+              style={{ pathLength }}
+            />
+          </motion.g>
+          <motion.path
+            {...sharedPathProps}
+            strokeWidth={2.5}
+            style={{ pathLength, opacity: strokeOpacity }}
+            data-testid="scroll-progress-path"
+          />
         </svg>
       )}
     </div>
