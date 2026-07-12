@@ -1,4 +1,4 @@
-# PRD — Currículo Técnico Premium
+﻿# PRD — Currículo Técnico Premium
 
 > Documento de **produto**: visão, requisitos, decisões e status. A arquitetura técnica vive em `architecture.md`; as regras de trabalho no `CLAUDE.md` (§1 tem o mapa completo).
 
@@ -14,7 +14,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 3. Status Atual
 
-**Scroll Progress Line encerrada e em produção**: V2.3 (pontas G2) + V2.5 (vínculo 1:1, `data-line-version="v2.5-1to1"`) foram commitadas e refinadas pelo próprio usuário (`a7fa03f`→`d7ddb42`, testadas em produção — "vou deixar assim por enquanto"), seguidas do reposicionamento vertical do Hero (`b5886a1`). Post-mortem técnico das versões com física: `docs/scroll-line-postmortem.md`. **No working tree aguardando revisão e commit: V2.6 — camadas de profundidade do Hero** (mecânica em `architecture.md` §5.6; decisões a confirmar em §8).
+**Scroll Progress Line encerrada e em produção**: V2.3 (pontas G2) + V2.5 (vínculo 1:1, `data-line-version="v2.5-1to1"`) foram commitadas e refinadas pelo próprio usuário (`a7fa03f`→`d7ddb42`, testadas em produção — "vou deixar assim por enquanto"), seguidas do reposicionamento vertical do Hero (`b5886a1`). Post-mortem técnico das versões com física: `docs/scroll-line-postmortem.md`. **No working tree aguardando revisão e commit: V2.6 — camadas de profundidade do Hero** (mecânica em `architecture.md` §5.6; decisões a confirmar em §8). Próximo ciclo aprovado: **roadmap de estilização por seção (T0–T8, §8)** — o usuário dispara uma tarefa por vez.
 
 ## 4. Requisitos Funcionais
 
@@ -63,18 +63,71 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 8. Pendências e Backlog
 
-### Pendências da V2.6 — Camadas de profundidade do Hero (2026-07-12)
+### Roadmap de estilização por seção (V2.7+) — direção dada pelo usuário em 2026-07-12
 
-**Decisões tomadas que aguardam confirmação (tudo no working tree, nada commitado):**
+Após aprovar a V2.6, o usuário pediu que **cada seção** ganhe uma estilização própria e inovadora, sem sair da estética. Execução **uma tarefa por vez**, disparada pelo usuário (ex.: "executa a T1"); cada entrega vira uma linha no histórico (§9). T0 é pré-requisito técnico das demais; a ordem sugerida das outras é a ordem da página.
 
-* **A assinatura cromática foi estendida ao Hero.** Auroras de fundo, sheen do nome e o separador acima dos botões agora usam os tokens `--scroll-line-from/via/to` (roxo/azul/vermelho) em opacidades baixas — era a única forma de adicionar cor sem inventar paleta nova, e cria a narrativa "a assinatura nasce difusa no Hero e vira a linha". Pergunta objetiva: a presença de cor no Hero (sutil no light, mais visível no dark) agrada, ou prefere as auroras ainda mais discretas / removidas?
-* **Novo elemento interativo: scroll cue** (botão circular com chevron, ancorado em `#painel-de-impacto`) flutuando no padding inferior do Hero — convida o recrutador a rolar e encontra a linha logo abaixo. Pergunta objetiva: manter, ou o Hero fica melhor só com os 4 CTAs?
-* **Screenshots do README regenerados** com o Hero novo (e o script agora captura com `reducedMotion: "reduce"` — sem isso, a cascata de entrada sairia congelada pela metade nas capturas). Os 5 PNGs de `docs/screenshots/` mudaram no working tree; basta revisar visualmente junto com o resto.
+**Regras comuns a todas as tarefas (não repetidas em cada uma):**
 
-**Só o usuário pode resolver:**
+* Zinc monocromático via tokens; cor **somente** pelos tokens da assinatura `--scroll-line-*`, em dose homeopática — o Hero e a linha continuam os donos da assinatura.
+* CSS puro em `globals.css` sempre que possível (a lib motion segue exclusiva da linha); animações disparadas por scroll via `animation-timeline: view()` **sempre gated por `@supports`** com fallback estático.
+* Invariantes intocáveis: sanduíche de z-index da linha (fundo na `<section>` não-posicionada, wrapper `relative z-10`, texto sobre fundo opaco — `architecture.md` §5.5/§9), estrutura `h2` + bloco irmão (âncoras da geometria da linha), contraste §5.3, `prefers-reduced-motion` desliga todo movimento.
+* Definição de Pronto por tarefa: lint zero warnings, 28/28 e2e, Lighthouse a11y 100/100 light+dark se tocou contraste, screenshots do README regenerados se o visual capturado mudou.
 
-* **Validar o visual da V2.6 nos dois temas e commitar** — desktop e celular real (o sheen varre o nome a cada ~9s; a cascata de entrada só aparece no primeiro load). Mensagem sugerida: `feat(ui): add hero depth layers (signature auroras, name sheen, staggered entrance)`.
-* **Screenshots do README não mostram a linha** (herdado da V2.1, segue válido). O script captura tudo no topo da página, onde a linha ainda não foi desenhada (pathLength 0). Recomendação: se quiser exibir a linha no README, adicionar ao `scripts/readme-screenshots.ts` uma captura em meio de scroll; caso contrário, descartar.
+#### T0 — Infra de reveal por scroll + motivo unificado dos cabeçalhos *(pré-requisito das demais)*
+
+* Primitiva `.section-reveal` (+ classes de stagger) em `globals.css` usando `animation-timeline: view()`, fallback estático via `@supports`, desligada em reduced motion; herdar a lição do `hero-rise` (fill `both` sobrescreve utilitários de `opacity`/`transform` — animar wrappers; armadilha em `architecture.md` §9).
+* Motivo unificado nos `h2` das 8 seções: tick curto com o gradiente da assinatura à esquerda do título (mesma classe em todas), respeitando §5.3 nos fundos `muted`.
+* Documentar a primitiva em `architecture.md` §5.
+
+#### T1 — Painel de Impacto: números que contam ao entrar em cena
+
+* Count-up 100% CSS (`@property` inteiro + `counter()` em pseudo-elemento, timeline `view()`, gated): o valor real permanece no DOM como texto (leitores de tela/ATS) e o contador animado é `aria-hidden`; parsing tipado de prefixo/sufixo ("+600", "<5%") no componente.
+* Número com o gradiente metálico do nome do Hero (extrair classe compartilhada).
+* Hairline da assinatura no topo de cada card; hover com lift sutil; reveal dos 3 cards em stagger.
+
+#### T2 — Experiência Profissional: trilho que se acende
+
+* Substituir o `border-l` da `<ol>` por um trilho que se preenche conforme o scroll atravessa a seção (`view()` + `scaleY`, transform-only), monocromático com a ponta na tinta da assinatura.
+* Nós da timeline "acendem" (borda vazada → preenchida) quando o trilho os passa; `<time>` do período em pill glass (`bg-background/70`).
+* Cards deslizam da esquerda em stagger. Atenção: a linha global mergulha nesta seção — validar visualmente que trilho local e linha não competem.
+
+#### T3 — Projetos: card vitrine com borda viva
+
+* Borda com o gradiente da assinatura em `conic-gradient` girando lentamente (rotação via `@property`, gated; fallback: borda gradiente estática) em opacidade baixa — o card do Birthday.ai vira o único elemento "moldurado" da página.
+* Interior com a grade de pontos do Hero (reutilizar `hero-grid`/variante) em opacidade menor.
+* Badges da stack em reveal com stagger; micro-interação no CTA "Ver no GitHub" (ícone desliza no hover).
+
+#### T4 — Tecnologias: categorias com identidade
+
+* Ícone lucide `aria-hidden` por categoria (ex.: `Code2`/`Database`/`Server`/`Bot`) num tile arredondado no header de cada card — mapeamento tipado com fallback para categorias futuras.
+* Badges com pop-in em stagger no reveal; hover tinge a borda com `--scroll-line-via` em dose mínima.
+* Objetivo explícito: deixar de ser idêntica à seção de Competências (hoje as duas têm o mesmo visual).
+
+#### T5 — Competências e Metodologias: painéis editoriais numerados
+
+* Trocar os Cards por painéis `bg-background` opacos (invariante da linha) com numeração fantasma gigante (`01`–`05`, `text-foreground/5`) no canto; hover tinge o número com a assinatura.
+* Badges mantidos; reveal em stagger.
+* Critério de aceite: ler **diferente** da T4 à primeira vista.
+
+#### T6 — Competências Comportamentais: cards com barra de prova
+
+* Barra de acento fina à esquerda de cada card, preenchendo com a assinatura no hover.
+* Linha `evidence` (card de Comunicação) promovida a chip glass destacado — é a única prova concreta da seção.
+* Reveal em stagger.
+
+#### T7 — Formação Acadêmica e Idiomas: medidores de idioma
+
+* Nível de idioma como medidor segmentado de 5 pontos **derivado do union `Language.level`** (Básico→Nativo — dado já tipado, nada inventado), preenchimento com tinta da assinatura; o texto do nível permanece visível (medidor `aria-hidden`).
+* Ponto de status com pulse discreto junto a "Cursando" (tokens de foreground; pulse desligado em reduced motion).
+* Hairline da assinatura no topo do card único.
+
+#### T8 — Monitorias Acadêmicas: índice com pontilhado + coda da página
+
+* *Dot leaders* tipográficos entre título e período (estilo sumário de livro); hover com lift leve e pontilhado tingido.
+* Numeração fantasma discreta por linha (01–05).
+* Coda de fechamento: cue "voltar ao topo" espelhando o cue do Hero (simetria abertura/fechamento), âncora `#inicio`.
+* Reveal em stagger; é a última seção — conferir o encontro com o fim da linha global no rodapé.
 
 **Backlog opcional (herdado da V2.5, segue válido):**
 
