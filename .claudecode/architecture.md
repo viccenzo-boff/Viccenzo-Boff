@@ -12,7 +12,7 @@
 | UI | shadcn/ui (baseColor `zinc`, estilo `radix-vega`) | Componentes locais em `src/components/ui`, instalados via CLI |
 | Tema | next-themes | Classe `dark` no `<html>`, persistida em `localStorage` (§5.1) |
 | Busca | cmdk + Radix `Dialog` | §6 |
-| Animação | motion 12.x (sucessor do framer-motion) | Usada exclusivamente na Scroll Progress Line (§5.5): `useScroll`/`useTransform`/`motion.path` |
+| Animação | motion 12.x (sucessor do framer-motion) | Usada exclusivamente na Scroll Progress Line (§5.5): `useScroll`/`useTransform`/`motion.path`. As camadas do Hero animam via CSS puro (§5.6) |
 | Ícones | lucide-react + SVGs de marca próprios | GitHub/WhatsApp em `brand-icons.tsx` (lucide não tem ícones de marca) |
 | Fonte | Inter via `next/font/google` | Variável `--font-sans` |
 | Pacotes | pnpm | Build do `esbuild` (dep. do `tsx`) aprovado em `pnpm-workspace.yaml` (`allowBuilds`) |
@@ -78,7 +78,7 @@ Globais: `lang="pt-BR"` e `suppressHydrationWarning` no `<html>` (tema aplicado 
 
 | # | Componente | `id` | Fundo | Conteúdo |
 | --- | --- | --- | --- | --- |
-| 1 | `hero.tsx` | `inicio` | `background` | Nome, cargo alvo, localização, resumo profissional e 4 botões de contato (§3.3). Única seção centralizada (§5.4) |
+| 1 | `hero.tsx` | `inicio` | `background` | Nome, cargo alvo, localização, resumo profissional, 4 botões de contato (§3.3) e scroll cue para `#painel-de-impacto`. Única seção centralizada (§5.4); camadas visuais de profundidade em §5.6 |
 | 2 | `metrics-dashboard.tsx` | `painel-de-impacto` | `muted` | 3 cards de métricas de impacto (+600 atendimentos, +150 cartões de melhoria, <5% retrabalho) |
 | 3 | `experience-timeline.tsx` | `experiencia-profissional` | `background` | Timeline vertical: Dotse, IXC Soft, Dona Loca, com highlights |
 | 4 | `projects.tsx` | `projetos` | `muted` | Card do Birthday.ai (`cvData.projects`): descrição, stack em badges, 4 highlights, CTA "Ver no GitHub" (nova aba; `aria-label` inicia pelo texto visível — WCAG 2.5.3 *Label in Name*). `liveUrl` **não** renderizada (decisão de produto — PRD §6) |
@@ -129,6 +129,16 @@ Linha decorativa em SVG que nasce **fora da borda esquerda da tela**, no vão en
 * **Cores:** gradiente vertical roxo→azul→vermelho via tokens dedicados `--scroll-line-from/via/to` + `--scroll-line-opacity` em `globals.css` (variantes light/dark) — exceção cromática deliberada à paleta monocromática (PRD §6).
 * **Reduced motion:** sem branch JS — o draw padrão já é progresso acionado pelo usuário (1:1 com o scroll, sem animação autônoma), o que satisfaz reduced motion por construção; a media query de `globals.css` desativa o pulse do glow. **Não** renderizar linha estática completa nesse modo: usuários com animações desativadas no SO veriam a linha inteira "fixa" — foi exatamente o comportamento rejeitado na revisão da V2.1.
 
+### 5.6 Hero — camadas de profundidade
+
+Pacote visual 100% CSS (`globals.css`, classes com prefixo `hero-`) — o Hero permanece server component, zero JS novo. Estrutura DOM: `<header>` **não-posicionado** (preserva o sanduíche de z-index, §5.5) → wrapper `relative overflow-hidden` → backdrop decorativo `absolute inset-0 z-0` (`aria-hidden`) + conteúdo `relative z-10`.
+
+* **Backdrop:** grade de pontos (`hero-grid`, foreground a 10% com máscara radial que a esvai nas bordas) + três blobs aurora (`hero-aurora-a/b/c`) coloridos pelos tokens da assinatura `--scroll-line-from/via/to` — roxo topo-esquerda, azul topo-direita, vermelho na base, espelhando a ordem vertical do gradiente da linha. Os blobs usam `radial-gradient` (já nasce difuso — **sem** `filter: blur`, repaint caro) e drift lento animando apenas `transform` (trabalho 100% no compositor); opacidade por tema via `--hero-aurora-opacity` (0.12 light / 0.20 dark, escopada em `.hero-backdrop`).
+* **Nome (`hero-name`):** gradiente vertical clipado no glyph (a parada mais clara nunca desce de 78% do foreground — contraste de large text preservado) + sheen periódico (~9s) na cor `--hero-sheen` (mix de `--scroll-line-via` com o foreground) + `drop-shadow` via `--hero-name-glow` (sombra suave no light, glow azulado no dark — vars escopadas na própria classe). Fallback: fora de `@supports (background-clip: text)` o texto fica sólido em `--foreground`.
+* **Entrada em cascata (`hero-rise` + `hero-rise-2..6`):** fade+rise de 0,9s por bloco, delays de 120ms. O scroll cue é `absolute` no padding inferior do Hero (não desloca o layout) com `pointer-events-none` no strip e `pointer-events-auto` no link.
+* **Microdetalhes:** pill de localização (Badge `outline` glass: `bg-background/70` + `backdrop-blur-sm`); `Separator` com o gradiente assinatura (transparente nas pontas); hover-lift nos CTAs via `.hero-actions > *:hover:not(:active)` (o `:not(:active)` preserva o `active:translate-y-px` do Button).
+* **Reduced motion:** o bloco de `globals.css` desliga aurora, sheen, cascata, nudge do cue e hover-lift; tudo permanece visível no estado final estático. O script de screenshots do README captura com `reducedMotion: "reduce"` pelo mesmo motivo (capturas determinísticas no estado final).
+
 ## 6. Busca Global (Ctrl+K) e Navegação Ancorada
 
 * **Trigger:** botão no `SiteHeader` (`aria-label="Pesquisar no currículo"`, ícone de lupa, dica "Ctrl K" oculta em telas `sm-`) + atalho global `Ctrl+K`/`Cmd+K` (listener em `document`, registrado por `SearchCommand`).
@@ -177,4 +187,5 @@ Linha decorativa em SVG que nasce **fora da borda esquerda da tela**, no vão en
 | `animated-scroll-line.tsx` | **Não** usar `vector-effect="non-scaling-stroke"` junto com draw de `pathLength`: no Chromium o `stroke-dasharray` passa a ser medido em px de tela ao longo do path transformado e ignora a normalização do `pathLength` — a linha vira centenas de tracinhos repetidos. |
 | `animated-scroll-line.tsx` | **Não reintroduzir física/suavização no draw** (spring, exponencial, mola crítica, tetos de velocidade): quatro versões medidas falharam — qualquer dinâmica entre scroll e desenho ou atrasa (a ponta sai da tela e o traço inteiro salta com a página, o "teleporte") ou dispara (dardo por tick de roda). O vínculo 1:1 é decisão de produto (PRD §6); histórico completo e medições: `docs/scroll-line-postmortem.md`. Corolários: denominadores (progresso/âncora) usam o `viewportHeight` congelado no rebuild do layout — `innerHeight` lido por frame muda com a barra de URL do mobile e cria degraus sem scroll; antes de avaliar comportamento da linha, confirmar o build pela `data-line-version` no container (retestes da investigação rodaram produção velha sem ninguém notar). |
 | `src/components/ui/button.tsx` | O variant `outline` foi editado: os `dark:bg-input/30`/`dark:hover:bg-input/50` originais do shadcn são **translúcidos** e deixavam a Scroll Progress Line vazar por dentro dos botões do Hero no dark. Substituídos por `color-mix` opaco de mesma cor renderizada. Reaplicar se o componente for regenerado via CLI. |
+| `globals.css` (`hero-rise`) | A animação de entrada usa `animation-fill-mode: both`: os valores finais de `opacity`/`transform` sobrescrevem **para sempre** utilitários estáticos dessas propriedades no mesmo elemento. Nunca aplicar `hero-rise` num elemento que tenha `opacity-*`/`translate-*` próprios — animar um wrapper (é por isso que o `Separator` do Hero anima dentro de um `div`). |
 | Seções novas em `page.tsx` | Respeitar o sanduíche de z-index da Scroll Progress Line (§5.5): fundo na `<section>` não-posicionada, conteúdo no wrapper `relative z-10` e **blocos de texto sobre fundo opaco** (elementos só com borda deixam a linha vazar por dentro — bug original das monitorias). A geometria da linha ancora em `main section` com `<h2>` seguido do bloco de conteúdo (`nextElementSibling`) — manter essa estrutura, senão a seção fica invisível para a linha (sem portão/mergulho). Também incluir o `id` no `SECTION_ORDER` (linha acima). |

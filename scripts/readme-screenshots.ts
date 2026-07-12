@@ -25,9 +25,12 @@ async function main(): Promise<void> {
   await mkdir(OUTPUT_DIR, { recursive: true });
   const browser = await chromium.launch();
 
+  // reducedMotion desliga as animações de entrada/aurora do Hero (globals.css):
+  // capturas determinísticas, sempre no estado visual final.
   const desktop = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 2,
+    reducedMotion: "reduce",
   });
 
   const lightPage = await desktop.newPage();
@@ -55,6 +58,7 @@ async function main(): Promise<void> {
   const mobile = await browser.newContext({
     ...devices["Pixel 7"],
     deviceScaleFactor: 2,
+    reducedMotion: "reduce",
   });
   const mobilePage = await mobile.newPage();
   await openHome(mobilePage, "light");

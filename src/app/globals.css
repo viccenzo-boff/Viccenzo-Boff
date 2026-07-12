@@ -167,6 +167,178 @@
   animation: scroll-line-pulse 5s ease-in-out infinite;
 }
 
+/* ===== Hero: camadas de profundidade (V2.6) =====
+   Tudo CSS puro (o Hero segue server component). Cores decorativas vêm
+   exclusivamente dos tokens da assinatura --scroll-line-* — nenhuma cor nova. */
+
+.hero-backdrop {
+  --hero-aurora-opacity: 0.12;
+}
+
+.dark .hero-backdrop {
+  --hero-aurora-opacity: 0.2;
+}
+
+.hero-grid {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 10%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, black 25%, transparent 78%);
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, black 25%, transparent 78%);
+}
+
+/* Radial-gradient já nasce difuso: nada de filter blur (repaint caro). O drift
+   anima só transform — trabalho 100% no compositor. */
+.hero-aurora {
+  position: absolute;
+  width: 44rem;
+  height: 44rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--hero-aurora-color), transparent 70%);
+  opacity: var(--hero-aurora-opacity);
+  animation: hero-aurora-drift var(--hero-aurora-duration, 28s) ease-in-out infinite alternate;
+}
+
+/* Ordem vertical espelha o gradiente da linha: roxo no topo, vermelho na base. */
+.hero-aurora-a {
+  top: -14rem;
+  left: -12rem;
+  --hero-aurora-color: var(--scroll-line-from);
+  --hero-aurora-duration: 26s;
+}
+
+.hero-aurora-b {
+  top: -10rem;
+  right: -14rem;
+  --hero-aurora-color: var(--scroll-line-via);
+  --hero-aurora-duration: 34s;
+  animation-delay: -12s;
+}
+
+.hero-aurora-c {
+  bottom: -20rem;
+  left: 28%;
+  --hero-aurora-color: var(--scroll-line-to);
+  --hero-aurora-duration: 40s;
+  animation-delay: -22s;
+}
+
+@keyframes hero-aurora-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4.5rem, 2.5rem, 0) scale(1.18);
+  }
+}
+
+.hero-name {
+  --hero-sheen: color-mix(in srgb, var(--scroll-line-via) 60%, var(--foreground));
+  --hero-name-glow: drop-shadow(0 12px 26px color-mix(in srgb, var(--foreground) 22%, transparent));
+  color: var(--foreground);
+  filter: var(--hero-name-glow);
+}
+
+.dark .hero-name {
+  --hero-name-glow: drop-shadow(0 0 28px color-mix(in srgb, var(--scroll-line-via) 40%, transparent));
+}
+
+/* Gradiente clipado no glyph + sheen periódico. O fallback acima mantém o texto
+   sólido em engines sem background-clip: text. A parada mais clara do gradiente
+   nunca desce de 78% do foreground — contraste de large text preservado. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .hero-name {
+    background-image:
+      linear-gradient(
+        115deg,
+        transparent 0%,
+        transparent 42%,
+        var(--hero-sheen) 50%,
+        transparent 58%,
+        transparent 100%
+      ),
+      linear-gradient(
+        180deg,
+        var(--foreground) 55%,
+        color-mix(in srgb, var(--foreground) 78%, var(--background)) 100%
+      );
+    background-size: 250% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 100% 0, 0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: hero-name-sheen 9s ease-in-out infinite;
+    animation-delay: 2.2s;
+  }
+}
+
+@keyframes hero-name-sheen {
+  0% {
+    background-position: 100% 0, 0 0;
+  }
+  32%,
+  100% {
+    background-position: 0% 0, 0 0;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-rise-2 {
+  animation-delay: 120ms;
+}
+
+.hero-rise-3 {
+  animation-delay: 240ms;
+}
+
+.hero-rise-4 {
+  animation-delay: 360ms;
+}
+
+.hero-rise-5 {
+  animation-delay: 480ms;
+}
+
+.hero-rise-6 {
+  animation-delay: 600ms;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* :not(:active) preserva o feedback de clique (active:translate-y-px do Button). */
+.hero-actions > *:hover:not(:active) {
+  transform: translateY(-2px);
+}
+
+@keyframes hero-cue-nudge {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+.hero-cue-icon {
+  animation: hero-cue-nudge 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -176,5 +348,14 @@
   }
   .scroll-line-glow {
     animation: none;
+  }
+  .hero-aurora,
+  .hero-name,
+  .hero-rise,
+  .hero-cue-icon {
+    animation: none;
+  }
+  .hero-actions > *:hover:not(:active) {
+    transform: none;
   }
 }
