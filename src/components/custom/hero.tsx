@@ -13,7 +13,7 @@ export function Hero() {
 
   return (
     <header id="inicio" className="scroll-mt-20 border-b border-border bg-background">
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-10 px-6 py-20 text-center sm:py-28 lg:px-8">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-10 px-6 pt-10 pb-20 text-center sm:pt-14 sm:pb-28 lg:px-8">
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <MapPin className="size-4" aria-hidden="true" />
           <span>{contact.location}</span>
