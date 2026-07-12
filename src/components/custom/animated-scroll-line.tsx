@@ -23,10 +23,11 @@ import {
 // ponta no trilho fecha redonda, com o mesmo raio dos dois lados.
 //
 // A monotonia em y também alimenta o desenho: um mapa y → fração do
-// comprimento converte a posição da ponta (em px do documento) na fração a
-// desenhar. A ponta persegue uma âncora dentro do viewport (~45% da altura,
-// deslizando até a base no fim da página) com velocidade limitada — uma
-// descida lenta, contínua e visível enquanto o usuário rola.
+// comprimento converte a âncora perseguida (~45% da altura do viewport,
+// deslizando até a base no fim da página) na fração-alvo; a fração desenhada
+// segue o alvo com uma mola criticamente amortecida — rigidez por tipo de
+// ponteiro — e teto de velocidade de desenho: no toque a ponta desce junto
+// com a tela, no mouse cada tick de roda vira uma caminhada suave de A a B.
 
 // Trilho direito: fração mínima da largura e folga além do título mais largo
 const RAIL_X_FRACTION = 0.9;
@@ -49,12 +50,28 @@ const EXIT_OVERSHOOT = 40;
 const DRAW_MAP_STEPS_PER_SEGMENT = 24;
 
 // Perseguição da ponta: repouso a ~45% do viewport (deslizando até a base no
-// fim da página), aproximação proporcional e velocidade limitada — descida
-// lenta e contínua, sem os "arranques" de um spring convergido a cada tick
-// de scroll (calibrada com o usuário em quatro rodadas).
+// fim da página). A fração desenhada segue a fração-alvo com uma mola
+// criticamente amortecida (sem oscilação nem overshoot — a linha nunca
+// "desdesenha" sozinha), integrada em forma fechada: estável para qualquer
+// dt, inclusive frames longos de jank no mobile. A mola parte de velocidade
+// zero a cada mudança de alvo — movimento em "S", sem o arranque inicial
+// que o alisamento exponencial (front-loaded) dava a cada tick de roda.
+// A rigidez muda com o ponteiro primário, porque o scroll é outro:
+// - toque (pointer: coarse): scroll contínuo com inércia — a ponta desce
+//   "junto com a tela", acompanhando flings com atraso menor que meia tela;
+// - mouse (pointer: fine): scroll em degraus — cada tick vira uma caminhada
+//   A→B de ~0,5s, visível, nem dardo nem tartaruga.
+// O teto de velocidade de desenho transforma saltos grandes do alvo (cauda
+// inicial quase horizontal, pulo direto ao rodapé) em varredura contínua.
+// Descartes medidos em quatro rodadas com o usuário: spring rígido sobre a
+// fração ("arranques"), perseguição a ≤120px/s em y (ponta 1326px acima do
+// viewport em scroll real — o traço inteiro saltava com a página) e
+// alisamento exponencial único (dardo por tick no mouse, tartaruga no fling).
 const TIP_ANCHOR_FRACTION = 0.45;
-const TIP_CATCH_UP_RATE = 0.5; // fração do gap por segundo
-const TIP_MAX_SPEED = 120; // px do documento por segundo
+const TIP_STIFFNESS_FINE = 10; // rad/s — assentamento ~0,5s por tick de roda
+const TIP_STIFFNESS_COARSE = 20; // rad/s — assentamento ~0,25s, cola no toque
+const TIP_MAX_DRAW_SPEED_FINE = 3000; // px de comprimento do path por segundo
+const TIP_MAX_DRAW_SPEED_COARSE = 6000; // flings não podem esbarrar no teto
 
 const GRADIENT_ID = "scroll-line-gradient";
 
@@ -84,6 +101,9 @@ interface LineLayout {
   d: string;
   // Amostras [y no documento, fração do comprimento], em y crescente
   drawMap: ReadonlyArray<LinePoint>;
+  // Comprimento total do path em px — converte o limite de velocidade de
+  // desenho (px/s) em fração por segundo
+  totalLength: number;
 }
 
 // Mede as seções tituladas (h2) em coordenadas do documento. O retângulo do
@@ -208,7 +228,10 @@ function cubicPoint(segment: CubicSegment, t: number): LinePoint {
 
 // Amostra o path e associa cada y do documento à fração do comprimento já
 // percorrida — bem definido porque a curva é monotônica em y.
-function buildDrawMap(segments: ReadonlyArray<CubicSegment>): ReadonlyArray<LinePoint> {
+function buildDrawMap(segments: ReadonlyArray<CubicSegment>): {
+  entries: ReadonlyArray<LinePoint>;
+  totalLength: number;
+} {
   const entries: Array<[number, number]> = [];
   let length = 0;
   let previous: LinePoint | null = null;
@@ -223,7 +246,10 @@ function buildDrawMap(segments: ReadonlyArray<CubicSegment>): ReadonlyArray<Line
     }
   }
   const total = length > 0 ? length : 1;
-  return entries.map(([y, cumulative]) => [y, cumulative / total] as const);
+  return {
+    entries: entries.map(([y, cumulative]) => [y, cumulative / total] as const),
+    totalLength: total,
+  };
 }
 
 function lengthFractionAtY(drawMap: ReadonlyArray<LinePoint>, y: number): number {
@@ -249,7 +275,6 @@ function lengthFractionAtY(drawMap: ReadonlyArray<LinePoint>, y: number): number
   if (span <= 0) return highEntry[1];
   return lowEntry[1] + ((y - lowEntry[0]) / span) * (highEntry[1] - lowEntry[1]);
 }
-
 function buildLayout(size: OverlaySize): LineLayout | null {
   const { width, height } = size;
   if (width === 0 || height === 0) return null;
@@ -271,7 +296,8 @@ function buildLayout(size: OverlaySize): LineLayout | null {
   });
   points.push([width * EXIT_X_FRACTION, height + EXIT_OVERSHOOT]);
   const segments = buildSegments(width, firstSection.gapMidY, points);
-  return { size, d: buildPathD(segments), drawMap: buildDrawMap(segments) };
+  const { entries, totalLength } = buildDrawMap(segments);
+  return { size, d: buildPathD(segments), drawMap: entries, totalLength };
 }
 
 function subscribeToReducedMotion(onStoreChange: () => void): () => void {
@@ -288,6 +314,21 @@ function getServerPrefersReducedMotion(): boolean {
   return false;
 }
 
+// Ponteiro primário grosso (toque) vs. fino (mouse) — decide a rigidez da mola
+function subscribeToCoarsePointer(onStoreChange: () => void): () => void {
+  const mediaQuery = window.matchMedia("(pointer: coarse)");
+  mediaQuery.addEventListener("change", onStoreChange);
+  return () => mediaQuery.removeEventListener("change", onStoreChange);
+}
+
+function getIsCoarsePointer(): boolean {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function getServerIsCoarsePointer(): boolean {
+  return false;
+}
+
 export function AnimatedScrollLine() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<LineLayout | null>(null);
@@ -296,18 +337,25 @@ export function AnimatedScrollLine() {
     getPrefersReducedMotion,
     getServerPrefersReducedMotion,
   );
+  const isCoarsePointer = useSyncExternalStore(
+    subscribeToCoarsePointer,
+    getIsCoarsePointer,
+    getServerIsCoarsePointer,
+  );
   const { scrollYProgress } = useScroll();
   // Fração desenhada (0→1), derivada da posição da ponta em px do documento
   const pathLength = useMotionValue(0);
-  // Ponta atual; null = ainda no início do path (nada desenhado no load)
-  const tipYRef = useRef<number | null>(null);
+  // Estado da ponta: fração do comprimento já desenhada (0 = início do path,
+  // nada desenhado no load) e velocidade da mola em fração por segundo. O
+  // estado vive em fração — e não em y — para o teto de velocidade de
+  // desenho valer nos trechos quase horizontais, onde y quase não distingue
+  // posições ao longo da curva.
+  const tipFractionRef = useRef(0);
+  const tipVelocityRef = useRef(0);
 
   useAnimationFrame((_, delta) => {
     if (layout === null) return;
-    const { drawMap } = layout;
-    const first = drawMap[0];
-    const last = drawMap[drawMap.length - 1];
-    if (first === undefined || last === undefined) return;
+    const { drawMap, totalLength } = layout;
     const viewportHeight = window.innerHeight;
     const progress = scrollYProgress.get();
     // Âncora da ponta dentro do viewport, deslizando até a base da tela no
@@ -315,24 +363,41 @@ export function AnimatedScrollLine() {
     const anchorY =
       viewportHeight * (TIP_ANCHOR_FRACTION + (1 - TIP_ANCHOR_FRACTION) * progress);
     const targetY = progress * Math.max(layout.size.height - viewportHeight, 0) + anchorY;
-    const previousTipY = tipYRef.current ?? first[0];
-    let tipY: number;
+    const targetFraction = lengthFractionAtY(drawMap, targetY);
+    const previousFraction = tipFractionRef.current;
+    let fraction: number;
     if (prefersReducedMotion) {
       // Progresso acionado pelo usuário, não animação autônoma: segue o
       // scroll 1:1; o pulse do glow é desativado em globals.css.
-      tipY = targetY;
+      fraction = targetFraction;
+      tipVelocityRef.current = 0;
     } else {
-      const dt = Math.min(delta, 100) / 1000;
-      const speed = Math.min(
-        TIP_MAX_SPEED,
-        Math.max(-TIP_MAX_SPEED, (targetY - previousTipY) * TIP_CATCH_UP_RATE),
-      );
-      tipY = previousTipY + speed * dt;
+      // dt largo o bastante para frames de jank não "roubarem" tempo da
+      // mola (a forma fechada é estável mesmo com passos longos)
+      const dt = Math.min(delta, 250) / 1000;
+      const omega = isCoarsePointer ? TIP_STIFFNESS_COARSE : TIP_STIFFNESS_FINE;
+      const maxDrawSpeed = isCoarsePointer
+        ? TIP_MAX_DRAW_SPEED_COARSE
+        : TIP_MAX_DRAW_SPEED_FINE;
+      // Mola criticamente amortecida com alvo fixo durante o frame, em forma
+      // fechada: err(t) = e^(−ω·t) · (err0 + (v0 + ω·err0)·t)
+      const err0 = previousFraction - targetFraction;
+      const v0 = tipVelocityRef.current;
+      const b = v0 + omega * err0;
+      const decay = Math.exp(-omega * dt);
+      let velocity = (v0 - omega * b * dt) * decay;
+      fraction = targetFraction + (err0 + b * dt) * decay;
+      // Teto de velocidade de desenho; a velocidade da mola acompanha o
+      // corte para não acumular ímpeto fantasma enquanto o teto segura
+      const maxStep = (maxDrawSpeed * dt) / totalLength;
+      const step = fraction - previousFraction;
+      if (Math.abs(step) > maxStep) {
+        fraction = previousFraction + Math.sign(step) * maxStep;
+        velocity = (Math.sign(step) * maxDrawSpeed) / totalLength;
+      }
+      tipVelocityRef.current = velocity;
     }
-    // A ponta nunca recua além do início do path nem passa da saída
-    tipY = Math.min(Math.max(tipY, first[0]), last[0]);
-    tipYRef.current = tipY;
-    const fraction = lengthFractionAtY(drawMap, tipY);
+    tipFractionRef.current = fraction;
     if (Math.abs(fraction - pathLength.get()) > 0.00001) {
       pathLength.set(fraction);
     }

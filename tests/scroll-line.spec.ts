@@ -25,9 +25,9 @@ test.describe("Scroll Progress Line", () => {
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
 
-    // A ponta desce com velocidade limitada (~120px/s — deliberadamente
-    // lento, calibrado com o usuário): basta ver o draw progredir bem além
-    // do estado inicial, sem esperar a convergência completa.
+    // A ponta segue o scroll com mola criticamente amortecida e teto de
+    // velocidade de desenho (3000–6000px/s conforme o ponteiro): basta ver
+    // o draw progredir bem além do estado inicial, sem esperar convergir.
     test.setTimeout(120_000);
     await expect.poll(drawnRatio, { timeout: 60_000 }).toBeGreaterThan(0.5);
   });
