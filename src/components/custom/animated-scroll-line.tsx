@@ -1,13 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import {
-  motion,
-  useAnimationFrame,
-  useMotionValue,
-  useScroll,
-  useTransform,
-} from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useScroll, useTransform } from "motion/react";
 
 // A linha nasce fora da borda esquerda da tela, no vão entre o título da
 // primeira seção ("Painel de Impacto") e o primeiro card, e desce ancorada ao
@@ -23,11 +17,10 @@ import {
 // ponta no trilho fecha redonda, com o mesmo raio dos dois lados.
 //
 // A monotonia em y também alimenta o desenho: um mapa y → fração do
-// comprimento converte a âncora perseguida (~45% da altura do viewport,
-// deslizando até a base no fim da página) na fração-alvo; a fração desenhada
-// segue o alvo com uma mola criticamente amortecida — rigidez por tipo de
-// ponteiro — e teto de velocidade de desenho: no toque a ponta desce junto
-// com a tela, no mouse cada tick de roda vira uma caminhada suave de A a B.
+// comprimento converte a âncora da ponta (~45% da altura do viewport,
+// deslizando até a base no fim da página) na fração desenhada — vínculo 1:1
+// com o scroll: a fração é função pura da posição de scroll, e a linha só se
+// move quando (e na exata proporção em que) a página se move.
 
 // Trilho direito: fração mínima da largura e folga além do título mais largo
 const RAIL_X_FRACTION = 0.9;
@@ -49,29 +42,15 @@ const EXIT_OVERSHOOT = 40;
 // Resolução da amostragem do mapa y → fração do comprimento
 const DRAW_MAP_STEPS_PER_SEGMENT = 24;
 
-// Perseguição da ponta: repouso a ~45% do viewport (deslizando até a base no
-// fim da página). A fração desenhada segue a fração-alvo com uma mola
-// criticamente amortecida (sem oscilação nem overshoot — a linha nunca
-// "desdesenha" sozinha), integrada em forma fechada: estável para qualquer
-// dt, inclusive frames longos de jank no mobile. A mola parte de velocidade
-// zero a cada mudança de alvo — movimento em "S", sem o arranque inicial
-// que o alisamento exponencial (front-loaded) dava a cada tick de roda.
-// A rigidez muda com o ponteiro primário, porque o scroll é outro:
-// - toque (pointer: coarse): scroll contínuo com inércia — a ponta desce
-//   "junto com a tela", acompanhando flings com atraso menor que meia tela;
-// - mouse (pointer: fine): scroll em degraus — cada tick vira uma caminhada
-//   A→B de ~0,5s, visível, nem dardo nem tartaruga.
-// O teto de velocidade de desenho transforma saltos grandes do alvo (cauda
-// inicial quase horizontal, pulo direto ao rodapé) em varredura contínua.
-// Descartes medidos em quatro rodadas com o usuário: spring rígido sobre a
-// fração ("arranques"), perseguição a ≤120px/s em y (ponta 1326px acima do
-// viewport em scroll real — o traço inteiro saltava com a página) e
-// alisamento exponencial único (dardo por tick no mouse, tartaruga no fling).
+// Âncora da ponta em repouso: ~45% do viewport, deslizando até a base da
+// tela no fim da página (o desenho termina completo no rodapé)
 const TIP_ANCHOR_FRACTION = 0.45;
-const TIP_STIFFNESS_FINE = 10; // rad/s — assentamento ~0,5s por tick de roda
-const TIP_STIFFNESS_COARSE = 20; // rad/s — assentamento ~0,25s, cola no toque
-const TIP_MAX_DRAW_SPEED_FINE = 3000; // px de comprimento do path por segundo
-const TIP_MAX_DRAW_SPEED_COARSE = 6000; // flings não podem esbarrar no teto
+
+// Marcador de build no DOM (data-line-version): durante a investigação de
+// fluidez (docs/scroll-line-postmortem.md), retestes do usuário rodaram
+// versões velhas em produção sem ninguém perceber — confirme a versão sob
+// teste antes de tirar qualquer conclusão sobre o comportamento da linha.
+const LINE_VERSION = "v2.5-1to1";
 
 const GRADIENT_ID = "scroll-line-gradient";
 
@@ -101,9 +80,11 @@ interface LineLayout {
   d: string;
   // Amostras [y no documento, fração do comprimento], em y crescente
   drawMap: ReadonlyArray<LinePoint>;
-  // Comprimento total do path em px — converte o limite de velocidade de
-  // desenho (px/s) em fração por segundo
-  totalLength: number;
+  // Altura do viewport congelada no rebuild do layout. Nunca ler
+  // window.innerHeight por frame: no mobile ela muda quando a barra de URL
+  // recolhe no meio do scroll, e um denominador vivo deslocaria âncora e
+  // progresso sem nenhum input de scroll — um degrau visível na linha.
+  viewportHeight: number;
 }
 
 // Mede as seções tituladas (h2) em coordenadas do documento. O retângulo do
@@ -228,10 +209,7 @@ function cubicPoint(segment: CubicSegment, t: number): LinePoint {
 
 // Amostra o path e associa cada y do documento à fração do comprimento já
 // percorrida — bem definido porque a curva é monotônica em y.
-function buildDrawMap(segments: ReadonlyArray<CubicSegment>): {
-  entries: ReadonlyArray<LinePoint>;
-  totalLength: number;
-} {
+function buildDrawMap(segments: ReadonlyArray<CubicSegment>): ReadonlyArray<LinePoint> {
   const entries: Array<[number, number]> = [];
   let length = 0;
   let previous: LinePoint | null = null;
@@ -246,10 +224,7 @@ function buildDrawMap(segments: ReadonlyArray<CubicSegment>): {
     }
   }
   const total = length > 0 ? length : 1;
-  return {
-    entries: entries.map(([y, cumulative]) => [y, cumulative / total] as const),
-    totalLength: total,
-  };
+  return entries.map(([y, cumulative]) => [y, cumulative / total] as const);
 }
 
 function lengthFractionAtY(drawMap: ReadonlyArray<LinePoint>, y: number): number {
@@ -296,112 +271,58 @@ function buildLayout(size: OverlaySize): LineLayout | null {
   });
   points.push([width * EXIT_X_FRACTION, height + EXIT_OVERSHOOT]);
   const segments = buildSegments(width, firstSection.gapMidY, points);
-  const { entries, totalLength } = buildDrawMap(segments);
-  return { size, d: buildPathD(segments), drawMap: entries, totalLength };
+  return {
+    size,
+    d: buildPathD(segments),
+    drawMap: buildDrawMap(segments),
+    viewportHeight: window.innerHeight,
+  };
 }
 
-function subscribeToReducedMotion(onStoreChange: () => void): () => void {
-  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mediaQuery.addEventListener("change", onStoreChange);
-  return () => mediaQuery.removeEventListener("change", onStoreChange);
-}
-
-function getPrefersReducedMotion(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getServerPrefersReducedMotion(): boolean {
-  return false;
-}
-
-// Ponteiro primário grosso (toque) vs. fino (mouse) — decide a rigidez da mola
-function subscribeToCoarsePointer(onStoreChange: () => void): () => void {
-  const mediaQuery = window.matchMedia("(pointer: coarse)");
-  mediaQuery.addEventListener("change", onStoreChange);
-  return () => mediaQuery.removeEventListener("change", onStoreChange);
-}
-
-function getIsCoarsePointer(): boolean {
-  return window.matchMedia("(pointer: coarse)").matches;
-}
-
-function getServerIsCoarsePointer(): boolean {
-  return false;
+// Vínculo 1:1 com o scroll: a fração desenhada é uma função pura e
+// determinística da posição de scroll — sem física de perseguição. Mola,
+// alisamento exponencial e tetos de velocidade foram tentados em quatro
+// versões e removidos de propósito: qualquer sistema dinâmico entre o
+// scroll e o desenho ou atrasa (a ponta sai da tela e o traço inteiro salta
+// junto com a página — o "teleporte") ou dispara (dardo a cada tick de
+// roda). Não reintroduzir suavização aqui; histórico e medições em
+// docs/scroll-line-postmortem.md.
+function drawnFractionAt(layout: LineLayout, scrollY: number): number {
+  const scrollRange = Math.max(layout.size.height - layout.viewportHeight, 0);
+  // Clamp cobre overscroll elástico (scrollY negativo ou além do fim)
+  const clampedY = Math.min(Math.max(scrollY, 0), scrollRange);
+  const progress = scrollRange > 0 ? clampedY / scrollRange : 1;
+  const anchorY =
+    layout.viewportHeight * (TIP_ANCHOR_FRACTION + (1 - TIP_ANCHOR_FRACTION) * progress);
+  return lengthFractionAtY(layout.drawMap, clampedY + anchorY);
 }
 
 export function AnimatedScrollLine() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<LineLayout | null>(null);
-  const prefersReducedMotion = useSyncExternalStore(
-    subscribeToReducedMotion,
-    getPrefersReducedMotion,
-    getServerPrefersReducedMotion,
-  );
-  const isCoarsePointer = useSyncExternalStore(
-    subscribeToCoarsePointer,
-    getIsCoarsePointer,
-    getServerIsCoarsePointer,
-  );
-  const { scrollYProgress } = useScroll();
-  // Fração desenhada (0→1), derivada da posição da ponta em px do documento
+  // scrollY cru (px), não scrollYProgress: o denominador do progresso vem do
+  // layout congelado (drawnFractionAt) — o denominador vivo do motion muda
+  // com a barra de URL do mobile e criaria degraus sem input de scroll.
+  const { scrollY } = useScroll();
+  // Fração desenhada (0→1) do comprimento do path
   const pathLength = useMotionValue(0);
-  // Estado da ponta: fração do comprimento já desenhada (0 = início do path,
-  // nada desenhado no load) e velocidade da mola em fração por segundo. O
-  // estado vive em fração — e não em y — para o teto de velocidade de
-  // desenho valer nos trechos quase horizontais, onde y quase não distingue
-  // posições ao longo da curva.
-  const tipFractionRef = useRef(0);
-  const tipVelocityRef = useRef(0);
 
-  useAnimationFrame((_, delta) => {
+  // Recalcula por evento de scroll e por rebuild de layout — fora disso nada
+  // roda (não há loop por frame). Sob prefers-reduced-motion o comportamento
+  // é o mesmo: o draw já é progresso acionado pelo usuário, não animação
+  // autônoma; o pulse do glow é desativado em globals.css.
+  useEffect(() => {
     if (layout === null) return;
-    const { drawMap, totalLength } = layout;
-    const viewportHeight = window.innerHeight;
-    const progress = scrollYProgress.get();
-    // Âncora da ponta dentro do viewport, deslizando até a base da tela no
-    // fim da página para o desenho terminar completo no rodapé
-    const anchorY =
-      viewportHeight * (TIP_ANCHOR_FRACTION + (1 - TIP_ANCHOR_FRACTION) * progress);
-    const targetY = progress * Math.max(layout.size.height - viewportHeight, 0) + anchorY;
-    const targetFraction = lengthFractionAtY(drawMap, targetY);
-    const previousFraction = tipFractionRef.current;
-    let fraction: number;
-    if (prefersReducedMotion) {
-      // Progresso acionado pelo usuário, não animação autônoma: segue o
-      // scroll 1:1; o pulse do glow é desativado em globals.css.
-      fraction = targetFraction;
-      tipVelocityRef.current = 0;
-    } else {
-      // dt largo o bastante para frames de jank não "roubarem" tempo da
-      // mola (a forma fechada é estável mesmo com passos longos)
-      const dt = Math.min(delta, 250) / 1000;
-      const omega = isCoarsePointer ? TIP_STIFFNESS_COARSE : TIP_STIFFNESS_FINE;
-      const maxDrawSpeed = isCoarsePointer
-        ? TIP_MAX_DRAW_SPEED_COARSE
-        : TIP_MAX_DRAW_SPEED_FINE;
-      // Mola criticamente amortecida com alvo fixo durante o frame, em forma
-      // fechada: err(t) = e^(−ω·t) · (err0 + (v0 + ω·err0)·t)
-      const err0 = previousFraction - targetFraction;
-      const v0 = tipVelocityRef.current;
-      const b = v0 + omega * err0;
-      const decay = Math.exp(-omega * dt);
-      let velocity = (v0 - omega * b * dt) * decay;
-      fraction = targetFraction + (err0 + b * dt) * decay;
-      // Teto de velocidade de desenho; a velocidade da mola acompanha o
-      // corte para não acumular ímpeto fantasma enquanto o teto segura
-      const maxStep = (maxDrawSpeed * dt) / totalLength;
-      const step = fraction - previousFraction;
-      if (Math.abs(step) > maxStep) {
-        fraction = previousFraction + Math.sign(step) * maxStep;
-        velocity = (Math.sign(step) * maxDrawSpeed) / totalLength;
+    const update = (value: number) => {
+      const fraction = drawnFractionAt(layout, value);
+      if (Math.abs(fraction - pathLength.get()) > 0.00001) {
+        pathLength.set(fraction);
       }
-      tipVelocityRef.current = velocity;
-    }
-    tipFractionRef.current = fraction;
-    if (Math.abs(fraction - pathLength.get()) > 0.00001) {
-      pathLength.set(fraction);
-    }
-  });
+    };
+    // Cobre scroll restaurado pelo navegador no load e o rebuild de layout
+    update(scrollY.get());
+    return scrollY.on("change", update);
+  }, [layout, scrollY, pathLength]);
 
   // Sem isso, o linecap redondo deixa um ponto visível no início do path
   // mesmo com pathLength 0 — o traço só aparece quando o desenho começa.
@@ -442,6 +363,7 @@ export function AnimatedScrollLine() {
       ref={containerRef}
       aria-hidden="true"
       data-testid="scroll-progress-line"
+      data-line-version={LINE_VERSION}
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       style={{ opacity: "var(--scroll-line-opacity)" }}
     >
