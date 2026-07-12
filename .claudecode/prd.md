@@ -14,7 +14,7 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 3. Status Atual
 
-**V2.1 em produção** (B8 — Scroll Progress Line, commitada pelo usuário em `f88fb8b` + `4083165`). **V2.2 pronta no working tree** (linha reancorada ao DOM: nasce na borda esquerda da tela no vão do Painel de Impacto e não cruza mais nenhum título, em nenhum viewport — correção pedida pelo usuário com capturas em 2026-07-11) — aguardando revisão visual e commit; relatório em §8.
+**V2.2 commitada pelo usuário** (`1479d07` — linha reancorada ao DOM, não cruza títulos em nenhum viewport). Na revisão visual da V2.2 (2026-07-11, capturas do usuário) surgiu a **V2.3**: pontas não perfeitamente redondas em alguns portões do trilho direito — plano com subtasks e relatório em §8.
 
 ## 4. Requisitos Funcionais
 
@@ -61,19 +61,36 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 
 ## 8. Pendências e Backlog
 
-### Relatório da entrega V2.2 (2026-07-11 — correção da Scroll Progress Line)
+### Plano V2.3 — Pontas perfeitamente redondas nos portões do trilho direito (2026-07-11)
+
+**Sintoma (capturas do usuário):** em alguns pontos onde a linha vira à direita (os "portões" do trilho, na faixa de cada título), a ponta da curva não é perfeitamente arredondada — um flanco varre largo e o outro fecha apertado, formando um "bico".
+
+**Causa raiz identificada:** em cada portão encontram-se dois segmentos de Bézier cúbicos com tangente vertical contínua (junção G1 — sem quina de direção), mas com **curvatura descontínua** (não-G2). Como os pontos de controle ficam sempre a meio vão, o raio da ponta em cada flanco é `r = 1,5·(vão/2)²/percurso-horizontal` — e vão/percurso são diferentes acima e abaixo do portão (o vão depende da altura da seção vizinha; o percurso, de o mergulho vizinho ser profundo a 7% ou suave a 50% da largura). Resultado: raios que diferem por fator de até ~10× na emenda e, quando o vão vertical é curto, raios de ~10px sob um glow de 7px — quase um vértice. Os mergulhos à esquerda têm o mesmo defeito em grau leve (vãos maiores), fora do escopo desta correção.
+
+**Subtasks (o que será feito, ponto a ponto):**
+
+1. ✅ **Desacoplar os braços de controle por extremidade** em `buildSegments` (`animated-scroll-line.tsx`): hoje um único `controlY` a meio vão serve os dois lados de cada segmento; passam a existir offsets independentes de início e fim (tangentes seguem verticais).
+2. ✅ **Igualar a curvatura pelo flanco mais apertado:** por portão, raio único `r = min(teto dos dois flancos)`, com teto `(3/8)·vão²/percurso` — o flanco que já era o mais fechado permanece exatamente como está (o teto **é** o raio implícito atual) e só o flanco largo é recolhido até ele; braços do lado dos mergulhos seguem a meio vão e a curva segue **monotônica em y** (invariante da V2.2 que impede a linha de cruzar títulos). *Descartado na execução* o raio-alvo fixo (90px) do plano original: medição real mostrou que ele estreitaria as curvas do mobile, que hoje são naturalmente amplas (raios implícitos de 300–1700px) — mexeria onde não foi pedido.
+3. ✅ **Converter raio em braço de controle:** braço `d = √(2·r·percurso/3)` em cada lado do portão — curvatura idêntica dos dois flancos no ápice (junção G2), ponta perfeitamente redonda no lugar do "bico" (antes os raios diferiam por fator de até ~6× na emenda, ex.: 88px→16px no portão de Tecnologias em 1406px).
+4. ✅ **Não mexer em mais nada:** âncoras (x e y), mergulhos à esquerda, largura do traço (2.5px linha / 7px glow), início e saída intactos — só a altura dos braços de controle junto aos portões muda (a "altura" da curva no entorno do ápice, autorizada pelo usuário).
+5. ✅ **Validação visual antes/depois:** screenshots dos 7 portões em 1280px e 375px (Playwright com `reducedMotion` para a linha seguir o scroll 1:1) + verificação geométrica automática de que nenhum ponto do path invade a folga dos títulos.
+6. ✅ **Qualidade:** `pnpm lint` zero warnings, 28/28 e2e, `architecture.md` §5.5 atualizado (geometria G2 dos portões).
+
+### Relatório da entrega V2.3 (Protocolo de Carta Branca)
 
 **1. Decisões tomadas que aguardam confirmação:**
 
-* **Traçado novo: trilho direito nos títulos + mergulhos alternados.** Para garantir que a linha nunca cruze o texto de um título (em qualquer largura de tela), ela agora desce presa a um trilho à direita na altura de cada título e mergulha ao centro do conteúdo de cada seção — fundo à esquerda em seções alternadas, suave ao meio nas demais, preservando o ritmo de travessias anterior. Pergunta objetiva: o novo traçado agrada visualmente nos dois temas (light/dark)?
+* **Equalização pelo flanco mais apertado, sem raio-alvo global.** Cada ponta agora fecha com o raio que o flanco mais fechado daquele portão já tinha — o flanco largo é recolhido até ele. É a menor intervenção que elimina o "bico" (nada além dos portões muda; mobile fica visualmente idêntico), ao custo de os raios continuarem variando entre portões conforme o espaço disponível. Pergunta objetiva: as pontas agradam nos dois temas, desktop e celular?
 
 **2. Pendências que só o usuário pode resolver:**
 
-* **Revisar visualmente e commitar a V2.2** (working tree). Conferir a linha em light/dark e no celular — em especial o desenho acompanhando o scroll; mensagem sugerida: `fix(ui): anchor scroll line to DOM sections and draw its tip at the viewport fold`.
+* **Revisar visualmente e commitar a V2.3** (working tree). Conferir as pontas dos portões em light/dark, desktop e celular; mensagem sugerida: `fix(ui): round rail gate tips with curvature-matched G2 joints`.
+* **Screenshots do README não mostram a linha** (herdado da V2.1, segue válido). O script captura tudo no topo da página, onde a linha ainda não foi desenhada (pathLength 0). Recomendação: se quiser exibir a linha no README, adicionar ao `scripts/readme-screenshots.ts` uma captura em meio de scroll; caso contrário, descartar.
 
 **3. Novas tarefas descobertas durante a execução:**
 
-* **Screenshots do README não mostram a linha** (herdado da V2.1, segue válido). O script captura tudo no topo da página, onde a linha ainda não foi desenhada (pathLength 0). Recomendação: se quiser exibir a linha no README, adicionar ao `scripts/readme-screenshots.ts` uma captura em meio de scroll com espera do spring; caso contrário, descartar.
+* **Dois portões seguem redondos porém bem fechados (Tecnologias e Monitorias, ~13–17px de raio em desktop largo).** Não é mais "bico" — a ponta é simétrica —, mas o vão vertical curto entre o título e o conteúdo dessas seções, combinado ao percurso horizontal enorme dos mergulhos profundos (7% da largura), não comporta raio maior sem mexer em outra coisa. Se incomodar: a saída é rebalancear a **altura dos mergulhos profundos vizinhos** (descê-los dentro da seção para dar mais vão ao portão) — mexe onde a linha cruza o conteúdo, por isso não foi feito sem autorização. Recomendação: avaliar visualmente antes de decidir.
+* **Mergulhos à esquerda têm o mesmo defeito em grau leve.** A emenda de curvatura descontínua também existe nos pontos de mergulho (esquerda/meio), mas com vãos verticais maiores o desnível é pouco visível — o usuário não a apontou nas capturas. Recomendação: só estender a equalização G2 aos mergulhos se incomodar visualmente após esta entrega.
 
 ## 9. Histórico de Versões
 
@@ -90,4 +107,5 @@ Portfólio/currículo digital de altíssimo nível para **Viccenzo Gottardo Boff
 | V1.9 | B6: PDF versionado + guarda de hash no build (inversão após falha do deploy `dpl_AdGf4qFGpnuyaByzyHxCbzZRdBsx`) | `3987f2e` |
 | V2.0 | B4 (README-vitrine do Birthday.ai, repo externo) + B7 (README-vitrine deste repo com screenshots automatizados) + correção do bug da busca (Projetos/Tecnologias fora do `SECTION_ORDER`) — decisões autônomas confirmadas e README externo revisado pelo usuário em 2026-07-10 | `168c063`, `184c002` |
 | V2.1 | B8: Scroll Progress Line (lib `motion`, tokens `--scroll-line-*`, reduced-motion, +1 teste e2e → 28) — entregue sob carta branca e revisada em três rodadas de feedback do usuário no mesmo dia: linha em fluxo do documento atrás do texto (sanduíche de z-index), nascendo como sublinhado sob o resumo do Hero, e todos os blocos de conteúdo em fundo opaco (cards) para a linha nunca atravessar letras (`architecture.md` §5.5) | `f88fb8b`, `4083165` |
-| V2.2 | Scroll Progress Line reancorada ao DOM real: nasce fora da borda esquerda no vão entre o título do Painel de Impacto e o 1º card, portões num trilho à direita impedem que ela cruze qualquer título (mobile e desktop), mergulhos alternados preservam o ritmo; desenho por perseguição da ponta: âncora a ~45% do viewport e velocidade limitada ~120px/s, calibrado em quatro rodadas com o usuário (antes o draw acontecia até ~430px fora da tela e um spring convergido dava "arranques" presos à base da tela); verificação geométrica automatizada em 4 viewports (folga mínima 26px vs. 13 títulos invadidos antes) | *(aguardando commit)* |
+| V2.2 | Scroll Progress Line reancorada ao DOM real: nasce fora da borda esquerda no vão entre o título do Painel de Impacto e o 1º card, portões num trilho à direita impedem que ela cruze qualquer título (mobile e desktop), mergulhos alternados preservam o ritmo; desenho por perseguição da ponta: âncora a ~45% do viewport e velocidade limitada ~120px/s, calibrado em quatro rodadas com o usuário (antes o draw acontecia até ~430px fora da tela e um spring convergido dava "arranques" presos à base da tela); verificação geométrica automatizada em 4 viewports (folga mínima 26px vs. 13 títulos invadidos antes) | `1479d07` |
+| V2.3 | Pontas dos portões do trilho perfeitamente redondas: junção G2 por equalização da curvatura pelo flanco mais apertado (antes, braços a meio vão davam raios até ~6× desiguais na emenda — o "bico" apontado pelo usuário em 4 capturas); âncoras, mergulhos, largura do traço e mobile intactos; folga dos títulos revalidada (mín. 26px) | *(aguardando commit)* |

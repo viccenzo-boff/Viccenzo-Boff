@@ -16,9 +16,11 @@ import {
 // prende a linha no trilho direito exatamente na faixa vertical do título e
 // um mergulho leva ao centro do conteúdo — profundo à esquerda em seções
 // alternadas, suave ao meio nas demais (~1 travessia por seção). Tangentes
-// verticais com pontos de controle a meio vão: curva G1-contínua e monotônica
-// em y — cada faixa de título é cruzada uma única vez, sempre no trilho, o
-// que garante que a linha nunca passa por cima do texto de um título.
+// verticais em todas as âncoras: curva monotônica em y — cada faixa de
+// título é cruzada uma única vez, sempre no trilho, o que garante que a
+// linha nunca passa por cima do texto de um título. Nos portões, o flanco
+// mais largo é recolhido até a curvatura do mais apertado (junção G2): a
+// ponta no trilho fecha redonda, com o mesmo raio dos dois lados.
 //
 // A monotonia em y também alimenta o desenho: um mapa y → fração do
 // comprimento converte a posição da ponta (em px do documento) na fração a
@@ -115,28 +117,66 @@ function buildSegments(
   startY: number,
   points: ReadonlyArray<LinePoint>,
 ): CubicSegment[] {
+  const start: LinePoint = [-START_EDGE_OVERSHOOT, startY];
+  // Vão vertical e percurso horizontal efetivo de cada segmento (o braço do
+  // 1º segmento nasce em START_PULL — a saída da borda é horizontal).
+  const gaps: number[] = [];
+  const runs: number[] = [];
+  let previousMeasure = start;
+  points.forEach((point, index) => {
+    gaps.push(Math.max(point[1] - previousMeasure[1], 1));
+    const armX = index === 0 ? width * START_PULL : previousMeasure[0];
+    runs.push(Math.max(Math.abs(point[0] - armX), 1));
+    previousMeasure = point;
+  });
+  // Braços de controle verticais de cada segmento, a meio vão por padrão —
+  // com braço inicial + final ≤ vão, a curva permanece monotônica em y.
+  const startArms = gaps.map((gap) => gap / 2);
+  const endArms = gaps.map((gap) => gap / 2);
+  // Portões (âncoras pares; a última âncora é a saída pelo rodapé): com
+  // braços a meio vão, cada flanco fecha no ápice com raio próprio
+  // r = (3/8)·vão²/percurso — raios desiguais na emenda liam-se como "bico"
+  // (até ~6× entre flancos). O flanco mais largo é recolhido até o raio do
+  // mais apertado — braço d = √(2·r·percurso/3) produz curvatura 1/r no
+  // ápice — e a emenda vira G2: ponta redonda, sem alterar o flanco que já
+  // era o mais fechado nem os braços do lado dos mergulhos (d ≤ meio vão
+  // preserva a monotonia em y).
+  for (let gate = 0; gate + 1 < points.length; gate += 2) {
+    const gapIn = gaps[gate];
+    const gapOut = gaps[gate + 1];
+    const runIn = runs[gate];
+    const runOut = runs[gate + 1];
+    if (
+      gapIn === undefined ||
+      gapOut === undefined ||
+      runIn === undefined ||
+      runOut === undefined
+    ) {
+      continue;
+    }
+    const radius = Math.min(
+      (3 * gapIn * gapIn) / (8 * runIn),
+      (3 * gapOut * gapOut) / (8 * runOut),
+    );
+    endArms[gate] = Math.sqrt((2 * radius * runIn) / 3);
+    startArms[gate + 1] = Math.sqrt((2 * radius * runOut) / 3);
+  }
   const segments: CubicSegment[] = [];
-  let previous: LinePoint = [-START_EDGE_OVERSHOOT, startY];
+  let previous = start;
   points.forEach((point, index) => {
     const [x, y] = point;
-    if (index === 0) {
-      // Saída horizontal rente à borda rumo ao primeiro portão no trilho
-      segments.push({
-        from: previous,
-        control1: [width * START_PULL, startY],
-        control2: [x, (startY + y) / 2],
-        to: point,
-      });
-    } else {
-      const [previousX, previousY] = previous;
-      const controlY = (previousY + y) / 2;
-      segments.push({
-        from: previous,
-        control1: [previousX, controlY],
-        control2: [x, controlY],
-        to: point,
-      });
-    }
+    const [previousX, previousY] = previous;
+    // Saída horizontal rente à borda rumo ao primeiro portão no trilho
+    const control1: LinePoint =
+      index === 0
+        ? [width * START_PULL, startY]
+        : [previousX, previousY + (startArms[index] ?? 0)];
+    segments.push({
+      from: previous,
+      control1,
+      control2: [x, y - (endArms[index] ?? 0)],
+      to: point,
+    });
     previous = point;
   });
   return segments;
