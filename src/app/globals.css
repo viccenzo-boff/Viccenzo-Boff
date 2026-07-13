@@ -167,21 +167,54 @@
   animation: scroll-line-pulse 5s ease-in-out infinite;
 }
 
+/* ===== Assinatura tipográfica compartilhada =====
+   Gradiente metálico dos glifos — nome do Hero e números do Painel de
+   Impacto. Definido em :root, que é o mesmo <html> que recebe .dark:
+   var(--foreground) resolve com o tema certo antes de o valor herdar. A
+   parada mais clara nunca desce de 78% do foreground — contraste de large
+   text preservado nos dois temas. */
+:root {
+  --metallic-text-gradient: linear-gradient(
+    180deg,
+    var(--foreground) 55%,
+    color-mix(in srgb, var(--foreground) 78%, var(--background)) 100%
+  );
+}
+
+/* Fora de @supports (background-clip: text) o texto fica sólido em
+   --foreground — mesmo fallback do hero-name. */
+.metallic-text {
+  color: var(--foreground);
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .metallic-text {
+    background-image: var(--metallic-text-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
 /* ===== Hero: camadas de profundidade (V2.6) =====
    Tudo CSS puro (o Hero segue server component). Cores decorativas vêm
    exclusivamente dos tokens da assinatura --scroll-line-* — nenhuma cor nova. */
 
+/* Sobre fundo claro as cores precisam de mais presença para não sumir:
+   opacidade e densidade da grade são maiores no light do que no dark. */
 .hero-backdrop {
-  --hero-aurora-opacity: 0.12;
+  --hero-aurora-opacity: 0.26;
+  --hero-grid-strength: 15%;
 }
 
 .dark .hero-backdrop {
   --hero-aurora-opacity: 0.2;
+  --hero-grid-strength: 10%;
 }
 
 .hero-grid {
   background-image: radial-gradient(
-    color-mix(in srgb, var(--foreground) 10%, transparent) 1px,
+    color-mix(in srgb, var(--foreground) var(--hero-grid-strength, 10%), transparent) 1px,
     transparent 1px
   );
   background-size: 26px 26px;
@@ -245,9 +278,9 @@
   --hero-name-glow: drop-shadow(0 0 28px color-mix(in srgb, var(--scroll-line-via) 40%, transparent));
 }
 
-/* Gradiente clipado no glyph + sheen periódico. O fallback acima mantém o texto
-   sólido em engines sem background-clip: text. A parada mais clara do gradiente
-   nunca desce de 78% do foreground — contraste de large text preservado. */
+/* Sheen periódico sobre o gradiente metálico compartilhado (definido acima
+   em --metallic-text-gradient, com o racional de contraste). O fallback
+   acima mantém o texto sólido em engines sem background-clip: text. */
 @supports (background-clip: text) or (-webkit-background-clip: text) {
   .hero-name {
     background-image:
@@ -259,11 +292,7 @@
         transparent 58%,
         transparent 100%
       ),
-      linear-gradient(
-        180deg,
-        var(--foreground) 55%,
-        color-mix(in srgb, var(--foreground) 78%, var(--background)) 100%
-      );
+      var(--metallic-text-gradient);
     background-size: 250% 100%, 100% 100%;
     background-repeat: no-repeat;
     background-position: 100% 0, 0 0;
@@ -339,6 +368,155 @@
   animation: hero-cue-nudge 2.4s ease-in-out infinite;
 }
 
+/* ===== Seções: motivo dos cabeçalhos + reveal por scroll (V2.7/T0) ===== */
+
+/* Tick da assinatura à esquerda de todo h2 de seção — mesma dose visual da
+   linha (mesmos tokens, mesma opacidade); Hero e linha seguem os donos da
+   assinatura. O tick é pseudo-elemento: fica fora do DOM e o Range que mede
+   o texto do título para a geometria da linha não o enxerga. Posição
+   absoluta centrada na primeira linha (0.5lh): quando o título quebra em
+   duas linhas no mobile, o tick fica na primeira em vez de flutuar no
+   centro do bloco. */
+.section-heading {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.section-heading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5625rem;
+  top: calc(0.5lh - 1px);
+  width: 1.75rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--scroll-line-from),
+    var(--scroll-line-via),
+    var(--scroll-line-to)
+  );
+  opacity: var(--scroll-line-opacity);
+}
+
+/* Reveal dirigido pela posição da página (animation-timeline: view()) — sem
+   timer, sem JS. Fora do @supports não há animação: o conteúdo simplesmente
+   fica visível (fallback estático). fill both congela os valores do keyframe
+   no elemento (lição do hero-rise, architecture.md §9): aplicar SEMPRE em
+   wrappers internos — nunca num elemento com utilitários próprios de
+   opacity/transform, nunca no h2 nem no irmão direto dele (âncoras da
+   geometria da linha: um transform presente na hora da medição deslocaria o
+   portão do título). O shorthand animation reseta animation-timeline/range —
+   manter a ordem das declarações. */
+@supports (animation-timeline: view()) {
+  .section-reveal {
+    animation: section-reveal-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+
+  /* Stagger: mesmo vão (55% da entrada), início deslocado — irmãos que
+     entram juntos na viewport revelam em cascata. */
+  .section-reveal-2 {
+    animation-range: entry 9% entry 64%;
+  }
+
+  .section-reveal-3 {
+    animation-range: entry 18% entry 73%;
+  }
+
+  .section-reveal-4 {
+    animation-range: entry 27% entry 82%;
+  }
+
+  .section-reveal-5 {
+    animation-range: entry 36% entry 91%;
+  }
+
+  .section-reveal-6 {
+    animation-range: entry 45% entry 100%;
+  }
+}
+
+@keyframes section-reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Count-up do Painel de Impacto, 100% CSS: o inteiro registrado
+   --metric-count anima de 0 até --metric-target (inline no componente) na
+   entrada do card e counter() o converte em texto no ::before. O valor real
+   permanece num irmão sr-only (leitores de tela/ATS) e este span é
+   aria-hidden. Fora do @supports — e sob reduced motion, no fim do arquivo —
+   o ::before não existe e o fallback estático .metric-count-static fica
+   visível. */
+@property --metric-count {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+
+@supports (animation-timeline: view()) {
+  .metric-count {
+    display: inline-block;
+    counter-reset: metric-count var(--metric-count);
+    animation: metric-count-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+  }
+
+  .metric-count::before {
+    content: counter(metric-count);
+  }
+
+  .metric-count-static {
+    display: none;
+  }
+}
+
+@keyframes metric-count-up {
+  from {
+    --metric-count: 0;
+  }
+
+  to {
+    --metric-count: var(--metric-target, 0);
+  }
+}
+
+/* Hairline da assinatura colada no topo de um Card (Painel de Impacto;
+   reutilizável — T7 usa no card de formação). O overflow clipa o ::before
+   nos cantos arredondados — clip, NUNCA hidden: overflow hidden torna o
+   card um scroll container e o view() de qualquer descendente (count-up)
+   passa a medir o scrollport do card — onde o conteúdo já "entrou" — e a
+   animação salta direto para o estado final. */
+.card-hairline {
+  position: relative;
+  overflow: clip;
+}
+
+.card-hairline::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--scroll-line-from),
+    var(--scroll-line-via),
+    var(--scroll-line-to)
+  );
+  opacity: var(--scroll-line-opacity);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -352,8 +530,20 @@
   .hero-aurora,
   .hero-name,
   .hero-rise,
-  .hero-cue-icon {
+  .hero-cue-icon,
+  .section-reveal {
     animation: none;
+  }
+  /* Sem movimento: o contador some e o valor final estático reaparece. */
+  .metric-count {
+    animation: none;
+    counter-reset: none;
+  }
+  .metric-count::before {
+    content: none;
+  }
+  .metric-count-static {
+    display: inline;
   }
   .hero-actions > *:hover:not(:active) {
     transform: none;

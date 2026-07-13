@@ -9,7 +9,7 @@ export function SoftSkills() {
   return (
     <section id="competencias-comportamentais" className="scroll-mt-20 border-b border-border bg-background">
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <h2 className="section-heading text-sm font-semibold tracking-widest text-muted-foreground uppercase">
           Competências Comportamentais
         </h2>
 

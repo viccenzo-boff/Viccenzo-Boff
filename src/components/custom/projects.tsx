@@ -16,7 +16,7 @@ export function Projects() {
   return (
     <section id="projetos" className="scroll-mt-20 border-b border-border bg-muted">
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="text-sm font-semibold tracking-widest text-foreground/70 uppercase">
+        <h2 className="section-heading text-sm font-semibold tracking-widest text-foreground/70 uppercase">
           Projetos
         </h2>
 
