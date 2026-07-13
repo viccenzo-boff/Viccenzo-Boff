@@ -1,6 +1,17 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cvData } from "@/data/cv";
+import { cn } from "@/lib/utils";
+
+// Stagger do reveal dos badges (primitiva .section-reveal em globals.css). Fica
+// em cada Badge — deep na árvore, nunca no h2 nem no irmão direto dele (âncoras
+// da geometria da linha, §5.5). A maior categoria tem 5 itens.
+const BADGE_STAGGER = [
+  "",
+  "section-reveal-2",
+  "section-reveal-3",
+  "section-reveal-4",
+  "section-reveal-5",
+] as const;
 
 export function SkillsMatrix() {
   const { technicalSkills } = cvData;
@@ -13,27 +24,32 @@ export function SkillsMatrix() {
         </h2>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {technicalSkills.map((group) => (
-            <Card key={group.category} size="sm" className="signature-hover bg-background">
-              <CardHeader>
-                <h3 className="signature-hover-text text-sm font-semibold text-foreground">
-                  {group.category}
-                </h3>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {group.skills.map((skill) => (
-                    <Badge
-                      key={skill}
-                      variant="outline"
-                      className="rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {technicalSkills.map((group, groupIndex) => (
+            <div
+              key={group.category}
+              className="skill-panel signature-hover relative overflow-clip rounded-xl border border-border bg-background p-6"
+            >
+              <span className="skill-panel-number" aria-hidden="true">
+                {String(groupIndex + 1).padStart(2, "0")}
+              </span>
+              <h3 className="signature-hover-text relative text-sm font-semibold text-foreground">
+                {group.category}
+              </h3>
+              <div className="relative mt-4 flex flex-wrap gap-2">
+                {group.skills.map((skill, index) => (
+                  <Badge
+                    key={skill}
+                    variant="outline"
+                    className={cn(
+                      "section-reveal rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground",
+                      BADGE_STAGGER[index] ?? "",
+                    )}
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

@@ -854,6 +854,40 @@
   }
 }
 
+/* ===== Competências e Metodologias: painéis editoriais numerados (T5) =====
+   Diferencia a seção da irmã "Tecnologias" (T4, cards com tile de ícone +
+   pop-in): aqui os grupos viram painéis editoriais com uma numeração FANTASMA
+   gigante (01–05) sangrando no canto superior — dose ínfima do foreground (5%),
+   decorativa e aria-hidden (o <h3> textual é o rótulo real, então a11y intacta).
+   No hover/focus do painel a numeração é tingida pela assinatura
+   (--signature-accent), acompanhando o halo de .signature-hover (fonte única,
+   mais abaixo — o painel a consome como superfície). O painel é bg-background
+   opaco (invariante da linha, §5.5) e plano (sem ring/shadow do Card), o que
+   reforça a leitura distinta da T4 à primeira vista. overflow: clip (no
+   componente) recorta o número que sangra — clip, NUNCA hidden (§9): hidden
+   tornaria o painel scroll container e o reveal por view() dos badges saltaria
+   ao estado final. O conteúdo (h3/badges) é position: relative → pinta acima do
+   número (mesmo contexto de empilhamento, ordem do DOM). */
+.skill-panel-number {
+  position: absolute;
+  top: -0.75rem;
+  right: 0.75rem;
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--foreground) 5%, transparent);
+  pointer-events: none;
+  user-select: none;
+  transition: color 300ms ease;
+}
+
+.signature-hover:hover .skill-panel-number,
+.signature-hover:focus-within .skill-panel-number {
+  color: color-mix(in srgb, var(--signature-accent) 24%, transparent);
+}
+
 /* ===== Interação de assinatura: glow no hover/focus (fonte única) =====
    A mecânica que nasceu em Tecnologias (T4) vira a interação PRINCIPAL da
    página: no hover/focus o elemento "acende" com a tinta da assinatura — a via
