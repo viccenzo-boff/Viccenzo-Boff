@@ -517,6 +517,163 @@
   opacity: var(--scroll-line-opacity);
 }
 
+/* ===== Experiência Profissional: trilho que se acende (T2) =====
+   O border-l estático da timeline vira um trilho que se preenche conforme o
+   scroll atravessa a seção — com a tinta da assinatura (feedback do usuário
+   na revisão da T2: "as mesmas corzinhas da linha", não só cinza). A tinta é
+   uma camada FIXA com o gradiente vertical da linha (cada altura do trilho
+   tem sua cor definitiva) e quem se move é uma CORTINA opaca na cor do
+   trilho apagado, deslizando de translateY(0) a 100% e revelando a tinta de
+   cima para baixo — transform-only (uma barra colorida que transladasse
+   mostraria o gradiente pela ponta errada; scaleY o esticaria). overflow-y:
+   clip esconde a cortina além da base — clip, nunca hidden (§9) — e
+   overflow-x: visible deixa o halo da borda escapar dos 2px. A borda do
+   desenho fica presa a ~45% da altura do viewport, a MESMA âncora da ponta
+   da linha global (§5.5): o range começa quando o topo do trilho cruza essa
+   altura (entrou 55vh pelo rodapé) e termina quando a base cruza
+   (100% − 45vh). vh (≈lvh) é estável no mobile — a barra de URL não cria
+   degrau (mesma lição dos denominadores congelados da linha, §9). O timeline
+   nomeado vive no trilho e a animação na cortina: o subject de um view()
+   nunca deve ser o próprio elemento transformado. */
+.experience-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(0.75rem - 1px);
+  width: 2px;
+  border-radius: 9999px;
+  overflow-x: visible;
+  overflow-y: clip;
+  view-timeline: --experience-rail block;
+}
+
+.experience-rail-ink {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    var(--scroll-line-from),
+    var(--scroll-line-via),
+    var(--scroll-line-to)
+  );
+  opacity: var(--scroll-line-opacity);
+}
+
+/* Fallback estático (fora do @supports e sob reduced motion): sem animação a
+   cortina fica no transform base (100%, além da base, clipada) e o trilho
+   aparece revelado por inteiro; halo e acento da borda são gated — estado
+   estático não tem "ponta". */
+.experience-rail-cover {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--border);
+  transform: translateY(100%);
+}
+
+@supports (animation-timeline: view()) {
+  .experience-rail-cover {
+    animation: experience-rail-uncover linear both;
+    animation-timeline: --experience-rail;
+    animation-range: cover 55vh cover calc(100% - 45vh);
+  }
+
+  /* Borda do desenho (topo da cortina): acento que intensifica o fim da
+     tinta + halo radial suave — mesma dose da linha (--scroll-line-opacity). */
+  .experience-rail-cover::after {
+    content: "";
+    position: absolute;
+    top: -2.5rem;
+    right: 0;
+    left: 0;
+    height: 2.5rem;
+    background: linear-gradient(180deg, transparent, var(--scroll-line-via));
+    opacity: var(--scroll-line-opacity);
+  }
+
+  .experience-rail-cover::before {
+    content: "";
+    position: absolute;
+    top: -0.5rem;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--scroll-line-via) 55%, transparent),
+      transparent 72%
+    );
+    opacity: var(--scroll-line-opacity);
+  }
+}
+
+@keyframes experience-rail-uncover {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* O nó nasce vazado (fundo da página) e acende quando cruza os mesmos 45% do
+   viewport em que a ponta do trilho está presa — a sincronia é exata por
+   construção: nó e borda do preenchimento cruzam essa altura no mesmo
+   instante (retas de mesma inclinação). O ripple na cor da assinatura marca
+   a ignição e se dissolve. Base (fallback) = aceso, via bg-foreground no
+   componente. */
+@supports (animation-timeline: view()) {
+  .experience-node {
+    animation: experience-node-ignite linear both;
+    animation-timeline: view();
+    animation-range: cover 53vh cover 57vh;
+  }
+}
+
+@keyframes experience-node-ignite {
+  from {
+    background-color: var(--background);
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  55% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--scroll-line-via) 30%, transparent);
+  }
+
+  to {
+    background-color: var(--foreground);
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* Slide dos cards da timeline: variante da primitiva .section-reveal que só
+   troca o keyframe (entrada pela esquerda) — timeline, range, stagger
+   (.section-reveal-2/-3) e o desligamento por reduced motion continuam os da
+   primitiva. Só animation-name: o shorthand resetaria timeline/range, e o
+   bloco de reduced motion no fim do arquivo precisa vencer esta declaração
+   por ordem de fonte. */
+@supports (animation-timeline: view()) {
+  .experience-card-reveal {
+    animation-name: experience-card-slide;
+  }
+}
+
+@keyframes experience-card-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-1.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -533,6 +690,17 @@
   .hero-cue-icon,
   .section-reveal {
     animation: none;
+  }
+  /* Trilho da Experiência estático no estado final: cortina no transform
+     base (100%, clipada), tinta revelada por inteiro, nós acesos, sem borda
+     acesa nem halo. O slide dos cards já morre com .section-reveal acima. */
+  .experience-rail-cover,
+  .experience-node {
+    animation: none;
+  }
+  .experience-rail-cover::before,
+  .experience-rail-cover::after {
+    content: none;
   }
   /* Sem movimento: o contador some e o valor final estático reaparece. */
   .metric-count {
