@@ -25,7 +25,7 @@ export function Hero() {
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-10 px-6 pt-10 pb-20 text-center sm:pt-14 sm:pb-28 lg:px-8">
           <Badge
             variant="outline"
-            className="hero-rise h-auto gap-2 rounded-full border-border/80 bg-background/70 px-4 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-sm"
+            className="signature-hover-text hero-rise h-auto gap-2 rounded-full border-border/80 bg-background/70 px-4 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-sm"
           >
             <MapPin aria-hidden="true" />
             <span>{contact.location}</span>
@@ -50,7 +50,7 @@ export function Hero() {
 
           <div className="hero-actions hero-rise hero-rise-5 flex flex-wrap items-center justify-center gap-3">
             <EmailContactMenu contact={contact} />
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="signature-hover">
               <a
                 href={buildWhatsAppChatUrl(contact)}
                 target="_blank"
@@ -61,13 +61,13 @@ export function Hero() {
                 WhatsApp
               </a>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="signature-hover">
               <a href={contact.github} target="_blank" rel="noopener noreferrer">
                 <GithubIcon />
                 GitHub
               </a>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="signature-hover">
               <a href={CV_PDF_PATH} download>
                 <Download aria-hidden="true" />
                 Baixar CV (PDF)

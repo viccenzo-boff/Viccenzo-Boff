@@ -40,9 +40,9 @@ export function MetricsDashboard() {
 
             return (
               <div key={metric.label} className={cn("section-reveal", REVEAL_STAGGER[index])}>
-                <Card className="card-hairline h-full bg-background text-center transition-transform duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                <Card className="signature-hover card-hairline h-full bg-background text-center hover:-translate-y-0.5 motion-reduce:hover:translate-y-0">
                   <CardHeader className="justify-items-center">
-                    <p className="metallic-text text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
+                    <p className="metallic-text metrics-figure text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
                       {parsed ? (
                         <>
                           <span className="sr-only">{metric.value}</span>

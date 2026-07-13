@@ -38,18 +38,18 @@ export function ExperienceTimeline() {
                   <Card size="sm" className="bg-background">
                     <CardHeader>
                       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <h3 className="text-lg font-semibold text-foreground">
+                        <h3 className="signature-hover-text text-lg font-semibold text-foreground">
                           {experience.role}
                         </h3>
                         <Badge
                           asChild
                           variant="outline"
-                          className="h-auto rounded-full border-border/80 bg-background/70 px-3 py-1 text-muted-foreground backdrop-blur-sm"
+                          className="signature-hover-text h-auto rounded-full border-border/80 bg-background/70 px-3 py-1 text-muted-foreground backdrop-blur-sm"
                         >
                           <time>{experience.period}</time>
                         </Badge>
                       </div>
-                      <p className="text-sm font-medium text-foreground/80">
+                      <p className="signature-hover-text text-sm font-medium text-foreground/80">
                         {experience.company} · {experience.location}
                       </p>
                     </CardHeader>

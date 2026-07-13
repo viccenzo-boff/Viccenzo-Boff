@@ -14,9 +14,9 @@ export function SkillsMatrix() {
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
           {technicalSkills.map((group) => (
-            <Card key={group.category} size="sm" className="bg-background">
+            <Card key={group.category} size="sm" className="signature-hover bg-background">
               <CardHeader>
-                <h3 className="text-sm font-semibold text-foreground">
+                <h3 className="signature-hover-text text-sm font-semibold text-foreground">
                   {group.category}
                 </h3>
               </CardHeader>

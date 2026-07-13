@@ -92,6 +92,12 @@
     --scroll-line-via: hsl(221 83% 53%);
     --scroll-line-to: hsl(0 72% 51%);
     --scroll-line-opacity: 0.5;
+    /* Acento das interações de hover/focus da página (a "via" do gradiente da
+       linha). Fonte única do glow de assinatura (.signature-hover/-text): como
+       referencia --scroll-line-via de forma tardia (substituição no ponto de
+       uso), resolve com a variante correta em light e dark sem precisar ser
+       redefinido no bloco .dark — mesma técnica de --metallic-text-gradient. */
+    --signature-accent: var(--scroll-line-via);
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -808,24 +814,20 @@
   transition: color 200ms ease, border-color 200ms ease;
 }
 
-/* Interação (mouse; o estado estático é monocromático e completo): o hover do
-   card acende o tile com a via da assinatura e o hover do badge tinge a borda
-   — a base transition-all do badgeVariants anima a cor. */
-.tech-card {
-  transition: border-color 200ms ease;
-}
-
-.tech-card:hover {
-  border-color: color-mix(in srgb, var(--scroll-line-via) 22%, var(--border));
-}
-
-.tech-card:hover .tech-tile {
-  border-color: color-mix(in srgb, var(--scroll-line-via) 40%, var(--border));
-  color: color-mix(in srgb, var(--scroll-line-via) 55%, var(--foreground));
+/* Interação (mouse; o estado estático é monocromático e completo): a moldura e
+   o halo do card vêm da interação de assinatura compartilhada (.signature-hover
+   — fonte única mais abaixo, aplicada ao Card em technologies.tsx). Aqui fica só
+   o que é próprio da seção: o hover/focus do card acende o tile do ícone e o
+   hover do badge tinge a borda (a base transition-all do badgeVariants anima a
+   cor). Tudo deriva de --signature-accent. */
+.tech-card:hover .tech-tile,
+.tech-card:focus-within .tech-tile {
+  border-color: color-mix(in srgb, var(--signature-accent) 40%, var(--border));
+  color: color-mix(in srgb, var(--signature-accent) 55%, var(--foreground));
 }
 
 .tech-badge:hover {
-  border-color: color-mix(in srgb, var(--scroll-line-via) 45%, var(--border));
+  border-color: color-mix(in srgb, var(--signature-accent) 45%, var(--border));
 }
 
 /* Pop-in dos badges: variante da primitiva .section-reveal que troca apenas o
@@ -850,6 +852,113 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* ===== Interação de assinatura: glow no hover/focus (fonte única) =====
+   A mecânica que nasceu em Tecnologias (T4) vira a interação PRINCIPAL da
+   página: no hover/focus o elemento "acende" com a tinta da assinatura — a via
+   do gradiente da linha (--signature-accent), em dose homeopática. Só :hover e
+   :focus-visible; o repouso continua 100% monocromático (tokens zinc), então o
+   contraste/a11y do estado padrão fica intacto por construção (o Lighthouse só
+   audita o repouso). Nada de transform NOVO (glow = cor + brilho): o layout não
+   muda, então a geometria da linha (§5.5) nunca é remedida. Tudo deriva de
+   --signature-accent — trocar a via da linha propaga para todos os consumidores.
+
+   Duas primitivas conforme o alvo:
+   - .signature-hover      → superfícies (cards, botões, tiles/pills): tinge a
+     borda (quando há) e acende um halo (box-shadow) da assinatura; ícones
+     descendentes (lucide/marca em currentColor) acendem junto.
+   - .signature-hover-text → texto (nome, títulos, empresas, datas, links): a cor
+     desliza para a assinatura + halo de texto sutil (o mix mantém 45% do
+     foreground — segue legível/contrastado no hover).
+
+   Reduced motion segue o precedente do .tech-card já em produção: a transição de
+   cor/halo do hover não é movimento vestibular e permanece; só transform/animação
+   é desligado no bloco @media do fim do arquivo (nenhum transform novo é criado
+   aqui — a lista de transition só cobre o lift que já existe em cada consumidor). */
+
+.signature-hover {
+  transition:
+    color 300ms ease,
+    background-color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms ease;
+}
+
+.signature-hover:hover,
+.signature-hover:focus-visible {
+  border-color: color-mix(in srgb, var(--signature-accent) 45%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--signature-accent) 32%, transparent),
+    0 4px 24px -6px color-mix(in srgb, var(--signature-accent) 42%, transparent);
+}
+
+.signature-hover svg {
+  transition: color 300ms ease;
+}
+
+.signature-hover:hover svg,
+.signature-hover:focus-visible svg {
+  color: color-mix(in srgb, var(--signature-accent) 55%, var(--foreground));
+}
+
+.signature-hover-text {
+  transition: color 300ms ease, text-shadow 300ms ease;
+}
+
+.signature-hover-text svg {
+  transition: color 300ms ease;
+}
+
+.signature-hover-text:hover,
+.signature-hover-text:focus-visible {
+  color: color-mix(in srgb, var(--signature-accent) 55%, var(--foreground));
+  text-shadow: 0 0 20px color-mix(in srgb, var(--signature-accent) 42%, transparent);
+}
+
+/* Número do Painel de Impacto: é .metallic-text, pintado por background-clip:
+   text (color/text-shadow são no-op sob o clip) — o glow da assinatura vem por
+   filter drop-shadow, aceso no hover do card (.signature-hover no Card). */
+.metrics-figure {
+  transition: filter 300ms ease;
+}
+
+.signature-hover:hover .metrics-figure {
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--signature-accent) 50%, transparent));
+}
+
+/* Card vitrine de Projetos: a moldura viva (conic-gradient) já É a borda do
+   card — no hover/focus-within ela sobe à opacidade plena e ganha um halo da
+   assinatura. focus-within acende também quando o CTA interno recebe foco de
+   teclado (o card em si não é focável). */
+.project-frame {
+  transition: box-shadow 300ms ease;
+}
+
+.project-frame::before {
+  transition: opacity 300ms ease;
+}
+
+.project-frame:hover,
+.project-frame:focus-within {
+  box-shadow: 0 6px 30px -6px color-mix(in srgb, var(--signature-accent) 55%, transparent);
+}
+
+.project-frame:hover::before,
+.project-frame:focus-within::before {
+  opacity: 1;
+}
+
+/* Nome do Hero: texto clipado (color/text-shadow no-op sob o background-clip) —
+   o hover intensifica o próprio drop-shadow do nome (--hero-name-glow) na cor da
+   assinatura, vencendo .hero-name e .dark .hero-name por ordem de fonte. */
+.hero-name {
+  transition: filter 300ms ease;
+}
+
+.hero-name:hover {
+  --hero-name-glow: drop-shadow(0 0 24px color-mix(in srgb, var(--signature-accent) 50%, transparent));
 }
 
 @media (prefers-reduced-motion: reduce) {

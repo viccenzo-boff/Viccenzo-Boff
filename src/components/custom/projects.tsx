@@ -40,7 +40,7 @@ export function Projects() {
               <Card className="project-card bg-card">
                 <div className="project-grid hero-grid" aria-hidden="true" />
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-foreground">
+                  <CardTitle className="signature-hover-text text-lg font-semibold text-foreground">
                     {project.name}
                   </CardTitle>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -78,7 +78,7 @@ export function Projects() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild variant="outline" className="project-cta">
+                  <Button asChild variant="outline" className="project-cta signature-hover">
                     <a
                       href={project.repoUrl}
                       target="_blank"

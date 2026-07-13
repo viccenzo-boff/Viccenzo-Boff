@@ -15,9 +15,9 @@ export function SoftSkills() {
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
           {softSkills.map((skill) => (
-            <Card key={skill.title} size="sm" className="bg-background">
+            <Card key={skill.title} size="sm" className="signature-hover bg-background">
               <CardHeader>
-                <h3 className="text-sm font-semibold text-foreground">
+                <h3 className="signature-hover-text text-sm font-semibold text-foreground">
                   {skill.title}
                 </h3>
               </CardHeader>

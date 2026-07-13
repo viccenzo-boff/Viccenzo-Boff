@@ -45,7 +45,7 @@ export function Technologies() {
             const Icon = CATEGORY_ICONS[group.category] ?? FALLBACK_CATEGORY_ICON;
 
             return (
-              <Card key={group.category} size="sm" className="tech-card bg-background">
+              <Card key={group.category} size="sm" className="tech-card signature-hover bg-background">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <span className="tech-tile size-9" aria-hidden="true">

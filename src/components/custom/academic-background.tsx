@@ -11,11 +11,11 @@ export function AcademicBackground() {
           Formação Acadêmica e Idiomas
         </h2>
 
-        <Card size="sm" className="mt-12 bg-background">
+        <Card size="sm" className="signature-hover mt-12 bg-background">
           <CardContent>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">
+                <h3 className="signature-hover-text text-lg font-semibold text-foreground">
                   {education.degree}
                 </h3>
                 <p className="text-sm font-medium text-foreground/80">
@@ -28,7 +28,7 @@ export function AcademicBackground() {
             </div>
 
             <div className="mt-8 border-t border-border pt-6">
-              <h3 className="text-sm font-semibold text-foreground">Idiomas</h3>
+              <h3 className="signature-hover-text text-sm font-semibold text-foreground">Idiomas</h3>
               <ul className="mt-4 flex flex-col gap-2 sm:flex-row sm:gap-10">
                 {languages.map((language) => (
                   <li key={language.name} className="flex items-baseline gap-2 text-sm">

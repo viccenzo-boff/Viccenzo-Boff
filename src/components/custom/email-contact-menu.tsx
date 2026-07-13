@@ -75,7 +75,11 @@ export function EmailContactMenu({ contact }: EmailContactMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="lg" aria-label={`Opções de contato por e-mail: ${contact.email}`}>
+          <Button
+            size="lg"
+            className="signature-hover"
+            aria-label={`Opções de contato por e-mail: ${contact.email}`}
+          >
             <Mail />
             {contact.email}
           </Button>
