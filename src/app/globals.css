@@ -931,6 +931,99 @@
   box-shadow: 0 0 8px 0 color-mix(in srgb, var(--signature-accent) 45%, transparent);
 }
 
+/* ===== Formação Acadêmica e Idiomas: medidores + ponto de status (T7) =====
+   Dois detalhes dão identidade ao card único da seção, sem sair da estética:
+
+   1) Medidor de idioma — 5 segmentos (o tamanho do union LanguageLevel,
+      Básico→Nativo) cujos N primeiros acendem com a TINTA da assinatura. A
+      continuidade é o truque: cada segmento carrega a MESMA assinatura
+      horizontal (from→via→to) ampliada a 500% (5 = nº de segmentos) e recorta,
+      via background-position por posição, a sua fatia — os acesos juntos
+      remontam o gradiente inteiro da esquerda p/ a direita, como a linha se
+      preenchendo (mais nível = mais assinatura revelada). Segmento apagado =
+      trilho neutro (--border). Dose homeopática pela opacidade da linha
+      (mesma dos ticks/hairlines). O medidor é aria-hidden — o nível textual
+      ao lado é o rótulo real, a11y intacta por construção. */
+.language-meter {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.language-meter-segment {
+  width: 1.5rem;
+  height: 5px;
+  border-radius: 9999px;
+  background-color: var(--border);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+}
+
+.language-meter-segment-filled {
+  background-image: linear-gradient(
+    90deg,
+    var(--scroll-line-from),
+    var(--scroll-line-via),
+    var(--scroll-line-to)
+  );
+  opacity: var(--scroll-line-opacity);
+}
+
+.language-meter-segment:nth-child(1) {
+  background-position: 0% 0;
+}
+
+.language-meter-segment:nth-child(2) {
+  background-position: 25% 0;
+}
+
+.language-meter-segment:nth-child(3) {
+  background-position: 50% 0;
+}
+
+.language-meter-segment:nth-child(4) {
+  background-position: 75% 0;
+}
+
+.language-meter-segment:nth-child(5) {
+  background-position: 100% 0;
+}
+
+/* 2) Ponto de status "vivo" junto a "Cursando" — tokens de foreground (não a
+      assinatura: é estado, não decoração cromática). O dot é sólido e o ::after
+      é um anel que expande e some, marcando a graduação em andamento. Reduced
+      motion desliga o pulse (bloco @media no fim): sem animação o ::after fica
+      estático sobre o dot e some visualmente — resta um ponto neutro. */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background-color: var(--foreground);
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--foreground);
+  animation: status-dot-pulse 2.4s ease-out infinite;
+}
+
+@keyframes status-dot-pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
 /* ===== Interação de assinatura: glow no hover/focus (fonte única) =====
    A mecânica que nasceu em Tecnologias (T4) vira a interação PRINCIPAL da
    página: no hover/focus o elemento "acende" com a tinta da assinatura — a via
@@ -1092,5 +1185,10 @@
      "charge-up" — o preenchimento aparece instantâneo (sem movimento). */
   .soft-skill-card::before {
     transition: none;
+  }
+  /* Ponto de status da graduação: sem pulse — o anel para de expandir e
+     colapsa sobre o dot (resta um ponto neutro estático). */
+  .status-dot::after {
+    animation: none;
   }
 }
