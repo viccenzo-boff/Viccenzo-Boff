@@ -14,7 +14,7 @@ export function Hero() {
 
   return (
     <header id="inicio" className="scroll-mt-20 border-b border-border bg-background">
-      <div className="relative overflow-hidden">
+      <div className="hero-fill relative flex flex-col overflow-hidden">
         <div aria-hidden="true" className="hero-backdrop absolute inset-0 z-0">
           <div className="hero-grid absolute inset-0" />
           <div className="hero-aurora hero-aurora-a" />
@@ -22,7 +22,7 @@ export function Hero() {
           <div className="hero-aurora hero-aurora-c" />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-10 px-6 pt-10 pb-20 text-center sm:pt-14 sm:pb-28 lg:px-8">
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-10 px-6 pt-10 pb-20 text-center sm:pt-14 sm:pb-28 lg:px-8">
           <Badge
             variant="outline"
             className="hero-rise h-auto gap-2 rounded-full border-border/80 bg-background/70 px-4 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-sm"

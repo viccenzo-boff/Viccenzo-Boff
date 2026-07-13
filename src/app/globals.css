@@ -72,6 +72,11 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
+    /* Altura do site-header sticky (py-2 = 1rem + botão size-9 = 2.25rem +
+       borda 1px). O Hero preenche exatamente uma tela — 100svh menos esta
+       altura — para que header + Hero somem uma dobra em qualquer resolução,
+       sem empurrar a seta de scroll para fora do viewport. */
+    --site-header-height: calc(3.25rem + 1px);
     --scroll-line-from: hsl(262 83% 58%);
     --scroll-line-via: hsl(221 83% 53%);
     --scroll-line-to: hsl(0 72% 51%);
@@ -199,6 +204,19 @@
 /* ===== Hero: camadas de profundidade (V2.6) =====
    Tudo CSS puro (o Hero segue server component). Cores decorativas vêm
    exclusivamente dos tokens da assinatura --scroll-line-* — nenhuma cor nova. */
+
+/* Container do Hero preenche exatamente uma dobra: a altura real da janela
+   (100svh — o próprio navegador resolve para o viewport do dispositivo, sem
+   ler screen.width via JS) menos o header sticky (--site-header-height). É
+   min-height, não height: em telas muito baixas o conteúdo pode passar de
+   uma tela — aí o container cresce e nada é cortado; caso contrário preenche
+   a tela e o conteúdo centraliza (justify-center no filho), mantendo a seta
+   de scroll colada na base da dobra em qualquer resolução. svh (não dvh):
+   estável no mobile, sem reflow quando a barra de URL some/aparece — mesma
+   filosofia de estabilidade da Scroll Progress Line. */
+.hero-fill {
+  min-height: calc(100svh - var(--site-header-height));
+}
 
 /* Sobre fundo claro as cores precisam de mais presença para não sumir:
    opacidade e densidade da grade são maiores no light do que no dark. */
@@ -674,6 +692,92 @@
   }
 }
 
+/* ===== Projetos: card vitrine com borda viva (T3) =====
+   O card do Birthday.ai é o ÚNICO elemento "moldurado" da página: uma borda
+   com o gradiente da assinatura em conic-gradient girando lentamente. O
+   ângulo é registrado via @property para poder ser animado; fora do suporte
+   o var() cai no ângulo fixo (135deg) — borda gradiente estática, o
+   fallback pedido no roadmap. O ::before da moldura pinta o anel inteiro
+   atrás do card e o padding de 1,5px abre o vão da borda; o card opaco
+   (bg-card) cobre o centro, então a linha global nunca vaza pelo interior
+   (invariante do sanduíche de z-index, §5.5) — só o vão de 1,5px mostra o
+   gradiente. A opacidade fica no ::before (dose da assinatura), sem afetar o
+   card. */
+@property --project-frame-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.project-frame {
+  position: relative;
+  isolation: isolate;
+  padding: 1.5px;
+  border-radius: calc(var(--radius) * 1.4 + 1.5px);
+}
+
+.project-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--project-frame-angle, 135deg),
+    var(--scroll-line-from),
+    var(--scroll-line-via),
+    var(--scroll-line-to),
+    var(--scroll-line-via),
+    var(--scroll-line-from)
+  );
+  opacity: var(--scroll-line-opacity);
+  animation: project-frame-spin 12s linear infinite;
+}
+
+@keyframes project-frame-spin {
+  to {
+    --project-frame-angle: 360deg;
+  }
+}
+
+/* O card sobe acima do anel (z-index:1 estabelece o contexto de empilhamento
+   da moldura) e seu fundo opaco cobre o centro do gradiente. overflow: clip
+   contém a grade de pontos nos cantos arredondados — NUNCA hidden (§9): o
+   card viraria scroll container e o reveal por view() dos badges saltaria ao
+   estado final. box-shadow: none neutraliza o ring+shadow do shadcn: a
+   moldura viva é a única borda do card. */
+.project-card {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+  box-shadow: none;
+}
+
+/* Grade de pontos do Hero reaproveitada no interior (a classe .hero-grid
+   fornece o padrão de pontos e o background-size; aqui só a dose e a máscara
+   mudam). z-index:-1 assenta a grade atrás do texto e à frente do fundo do
+   card — dentro do contexto do .project-card, sem wrapper de conteúdo. Dose
+   menor que a do Hero (6%) e fade radial que concentra os pontos no topo
+   (título/badges) e some antes do corpo do texto. */
+.project-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  --hero-grid-strength: 6%;
+  -webkit-mask-image: radial-gradient(ellipse 120% 85% at 50% 0%, black 5%, transparent 66%);
+  mask-image: radial-gradient(ellipse 120% 85% at 50% 0%, black 5%, transparent 66%);
+}
+
+/* Micro-interação do CTA: o ícone desliza no hover (desligado em reduced
+   motion, no bloco do fim do arquivo). */
+.project-cta svg {
+  transition: transform 200ms ease;
+}
+
+.project-cta:hover svg {
+  transform: translateX(3px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -714,6 +818,14 @@
     display: inline;
   }
   .hero-actions > *:hover:not(:active) {
+    transform: none;
+  }
+  /* Moldura viva do card de Projetos parada no ângulo inicial (borda
+     gradiente estática); ícone do CTA sem deslize no hover. */
+  .project-frame::before {
+    animation: none;
+  }
+  .project-cta:hover svg {
     transform: none;
   }
 }
