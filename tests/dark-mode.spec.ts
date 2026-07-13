@@ -1,7 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Dark Mode", () => {
-  test("carrega em light por padrão, sem erros de console", async ({ page }) => {
+test.describe("Tema", () => {
+  // Sem preferência salva, o site segue o tema do SO (defaultTheme="system").
+  // Emulamos o SO em modo claro para tornar as asserções abaixo determinísticas.
+  test.use({ colorScheme: "light" });
+
+  test("sem preferência salva, segue o SO em modo claro, sem erros de console", async ({
+    page,
+  }) => {
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {
       if (msg.type() === "error") consoleErrors.push(msg.text());
@@ -35,12 +41,25 @@ test.describe("Dark Mode", () => {
       .toBe("light");
   });
 
-  test("não exibe FOUC: html já reflete o tema persistido antes do primeiro paint", async ({ page }) => {
+  test("não exibe FOUC: html já reflete o tema persistido antes do primeiro paint", async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("theme", "dark");
     });
 
     await page.goto("/");
     await expect(page.locator("html")).toHaveClass(/dark/);
+  });
+
+  test.describe("SO em modo escuro", () => {
+    test.use({ colorScheme: "dark" });
+
+    test("sem preferência salva, entra em dark automaticamente seguindo o SO", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveClass(/dark/);
+    });
   });
 });

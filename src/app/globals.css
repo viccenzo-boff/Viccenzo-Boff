@@ -59,6 +59,11 @@
 }
 
 :root {
+    /* Informa a UA que a página está em modo claro: scrollbars, campos do
+       formulário de contato e demais controles nativos herdam o esquema
+       resolvido. Alterna com a classe .dark (abaixo), acompanhando o tema
+       — inclusive quando o padrão vem do SO (defaultTheme="system"). */
+    color-scheme: light;
     --background: hsl(0 0% 100%);
     --foreground: hsl(240 10% 3.9%);
     --card: hsl(0 0% 100%);
@@ -109,6 +114,7 @@
 }
 
 .dark {
+    color-scheme: dark;
     --background: hsl(240 10% 3.9%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(240 10% 3.9%);

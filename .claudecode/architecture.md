@@ -10,7 +10,7 @@
 | Linguagem | TypeScript 5.x estrito | `any` proibido (`CLAUDE.md` §3) |
 | Estilização | Tailwind CSS v4 | **Sem** `tailwind.config.js` — tokens em `src/app/globals.css` (`:root`/`.dark` + `@custom-variant dark`) |
 | UI | shadcn/ui (baseColor `zinc`, estilo `radix-vega`) | Componentes locais em `src/components/ui`, instalados via CLI |
-| Tema | next-themes | Classe `dark` no `<html>`, persistida em `localStorage` (§5.1) |
+| Tema | next-themes | Padrão segue o SO (`prefers-color-scheme`); classe `dark` no `<html>`, escolha manual persistida em `localStorage` (§5.1) |
 | Busca | cmdk + Radix `Dialog` | §6 |
 | Animação | motion 12.x (sucessor do framer-motion) | Usada exclusivamente na Scroll Progress Line (§5.5): `useScroll`/`useTransform`/`motion.path`. As camadas do Hero animam via CSS puro (§5.6) |
 | Ícones | lucide-react + SVGs de marca próprios | GitHub/WhatsApp em `brand-icons.tsx` (lucide não tem ícones de marca) |
@@ -105,7 +105,7 @@ Globais: `lang="pt-BR"` e `suppressHydrationWarning` no `<html>` (tema aplicado 
 
 ### 5.1 Tema
 
-Light Mode padrão (`defaultTheme="light"`), Dark Mode via alternância manual no `ModeToggle` (botão único, ícones `Sun`/`Moon`, `aria-label` dinâmico + `aria-pressed`, `data-testid="mode-toggle"`). `enableSystem={false}` — decisão de produto (PRD §6). O `ModeToggle` usa `useSyncExternalStore` para o guard de hidratação (§9).
+O tema padrão segue o SO do visitante (`defaultTheme="system"` + `enableSystem`): sem preferência salva, o site abre no esquema que o navegador expõe via `prefers-color-scheme` e acompanha mudanças ao vivo. A escolha manual pelo `ModeToggle` grava um valor explícito (`light`/`dark`) em `localStorage` que passa a prevalecer sobre o SO — botão único, ícones `Sun`/`Moon`, `aria-label` dinâmico + `aria-pressed`, `data-testid="mode-toggle"`, comparando sempre `resolvedTheme` (o `system` já resolvido). Decisão de produto (PRD §6). O token CSS `color-scheme` acompanha o tema (`:root` → `light`, `.dark` → `dark`), então scrollbars e controles nativos (campos do formulário de contato) herdam o esquema resolvido. O `ModeToggle` usa `useSyncExternalStore` para o guard de hidratação (§9). Sem FOUC: o script inline do next-themes lê `localStorage`/`matchMedia` e aplica a classe antes do primeiro paint (`suppressHydrationWarning` no `<html>`).
 
 ### 5.2 Tokens e tipografia
 
@@ -177,19 +177,19 @@ Infra da estilização por seção (roadmap T0–T8 do PRD §8), 100% CSS em `gl
 
 ### 8.1 Lighthouse (Acessibilidade)
 
-100/100 em light **e** dark, auditado contra o build de produção (`pnpm build && pnpm start` + `npx lighthouse --only-categories=accessibility`). Para auditar dark: inverter temporariamente o `defaultTheme` do provider e rebuildar (o Lighthouse não injeta `localStorage`).
+100/100 em light **e** dark, auditado contra o build de produção (`pnpm build && pnpm start` + `npx lighthouse --only-categories=accessibility`). Para auditar dark: rodar o Lighthouse emulando o SO escuro — `npx lighthouse … --chrome-flags="--headless"` com `prefers-color-scheme: dark` (o padrão agora segue o SO, então basta emular o esquema; o Lighthouse não injeta `localStorage`). Alternativa: forçar temporariamente `defaultTheme="dark"` no provider e rebuildar.
 
 ### 8.2 Suíte Playwright (`pnpm test:e2e`)
 
 | Arquivo | Cobre | Testes |
 | --- | --- | --- |
-| `tests/dark-mode.spec.ts` | Tema padrão light, alternância, persistência em `localStorage`, ausência de FOUC, zero erros de console | 3 |
+| `tests/dark-mode.spec.ts` | Tema segue o SO (`colorScheme` claro/escuro emulado), alternância manual, persistência em `localStorage`, ausência de FOUC, zero erros de console | 4 |
 | `tests/search-navigation.spec.ts` | Abertura via botão/atalho, filtragem, navegação até a seção, Esc, estado vazio | 3 |
 | `tests/hero-contact.spec.ts` | Menu de e-mail (4 opções, URLs Gmail `su=`/Outlook `subject=`, `mailto:` com assunto, clipboard via `grantPermissions`) + WhatsApp (`wa.me` com `text=` codificado, nova aba) | 4 |
 | `tests/cv-download.spec.ts` | Botões de download (Hero e header), asset 200 + `content-type: application/pdf` + magic bytes `%PDF-` | 3 |
 | `tests/scroll-line.spec.ts` | Scroll Progress Line: overlay decorativo (`aria-hidden`, `pointer-events: none`, `position: absolute`) e vínculo 1:1 do draw (§5.5) — monotonia (fração cresce com o scroll, >0,5 no fim) e determinismo (voltar à mesma posição reproduz exatamente a mesma fração); leituras após 2 rAF, scroll com `behavior: "instant"` para furar o smooth do `html` | 1 |
 
-14 testes × 2 projetos (Desktop Chrome 1280px e Mobile Chrome 375px via `devices["Pixel 7"]`) = **28**. `playwright.config.ts` sobe o build de produção via `webServer` na porta 3100 — o build já exercita a guarda do PDF.
+15 testes × 2 projetos (Desktop Chrome 1280px e Mobile Chrome 375px via `devices["Pixel 7"]`) = **30**. `playwright.config.ts` sobe o build de produção via `webServer` na porta 3100 — o build já exercita a guarda do PDF.
 
 ## 9. Armadilhas Conhecidas (manutenção)
 
