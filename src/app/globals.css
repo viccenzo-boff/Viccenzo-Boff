@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Não varrer a documentação em busca de classes. Os docs (.claudecode, docs/,
+   README) citam classes de exemplo — ex.: a armadilha `min-h-[calc(100svh_-_
+   var(...))]` em architecture.md §9 — que, se escaneadas, o Tailwind materializa
+   como utilitários e emite CSS inválido (`var(...)`), quebrando o parser do
+   Turbopack no dev (e gerando warning no build). Documentação não tem runtime:
+   excluí-la da detecção automática de conteúdo é seguro e à prova de futuros
+   exemplos. Caminhos relativos a este arquivo (src/app/ → raiz = ../../). */
+@source not "../../.claudecode";
+@source not "../../docs";
+@source not "../../README.md";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -776,6 +787,69 @@
 
 .project-cta:hover svg {
   transform: translateX(3px);
+}
+
+/* ===== Tecnologias: categorias com identidade (T4) =====
+   Diferencia a seção da irmã "Competências" (visual idêntico até aqui): cada
+   card ganha um tile arredondado com o ícone lucide da categoria no header
+   (mapeamento tipado em technologies.tsx; ícone aria-hidden — o título textual
+   segue o rótulo acessível). O tile nasce neutro (muted + border) e revela a
+   assinatura só no hover do card, em dose homeopática — Hero e linha seguem os
+   donos da assinatura (PRD §8). */
+.tech-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: calc(var(--radius) * 0.7);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--foreground);
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+/* Interação (mouse; o estado estático é monocromático e completo): o hover do
+   card acende o tile com a via da assinatura e o hover do badge tinge a borda
+   — a base transition-all do badgeVariants anima a cor. */
+.tech-card {
+  transition: border-color 200ms ease;
+}
+
+.tech-card:hover {
+  border-color: color-mix(in srgb, var(--scroll-line-via) 22%, var(--border));
+}
+
+.tech-card:hover .tech-tile {
+  border-color: color-mix(in srgb, var(--scroll-line-via) 40%, var(--border));
+  color: color-mix(in srgb, var(--scroll-line-via) 55%, var(--foreground));
+}
+
+.tech-badge:hover {
+  border-color: color-mix(in srgb, var(--scroll-line-via) 45%, var(--border));
+}
+
+/* Pop-in dos badges: variante da primitiva .section-reveal que troca apenas o
+   keyframe (escala em vez de rise) — timeline, range, stagger (.section-reveal-2
+   …-6) e o desligamento por reduced motion continuam os da primitiva. Só
+   animation-name (o shorthand resetaria timeline/range); precisa vir DEPOIS de
+   .section-reveal e ANTES do bloco de reduced motion, que vence por ordem de
+   fonte (mesma disciplina do .experience-card-reveal). */
+@supports (animation-timeline: view()) {
+  .tech-badge-reveal {
+    animation-name: tech-badge-pop;
+  }
+}
+
+@keyframes tech-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
