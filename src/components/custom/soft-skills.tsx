@@ -2,6 +2,17 @@ import { Presentation } from "lucide-react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cvData } from "@/data/cv";
+import { cn } from "@/lib/utils";
+
+// Stagger do reveal dos cards (primitiva .section-reveal em globals.css). Fica em
+// cada Card — deep na árvore, nunca no h2 nem no irmão direto dele (a grade é a
+// âncora de conteúdo da geometria da linha, §5.5). São 4 cards.
+const CARD_STAGGER = [
+  "",
+  "section-reveal-2",
+  "section-reveal-3",
+  "section-reveal-4",
+] as const;
 
 export function SoftSkills() {
   const { softSkills } = cvData;
@@ -14,8 +25,15 @@ export function SoftSkills() {
         </h2>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {softSkills.map((skill) => (
-            <Card key={skill.title} size="sm" className="signature-hover bg-background">
+          {softSkills.map((skill, index) => (
+            <Card
+              key={skill.title}
+              size="sm"
+              className={cn(
+                "soft-skill-card section-reveal signature-hover bg-background",
+                CARD_STAGGER[index] ?? "",
+              )}
+            >
               <CardHeader>
                 <h3 className="signature-hover-text text-sm font-semibold text-foreground">
                   {skill.title}
@@ -26,10 +44,15 @@ export function SoftSkills() {
                   {skill.description}
                 </p>
                 {skill.evidence && (
-                  <p className="mt-3 flex gap-2 text-xs leading-relaxed text-muted-foreground">
-                    <Presentation className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                    <span>{skill.evidence}</span>
-                  </p>
+                  <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-background/60 p-3 backdrop-blur-sm">
+                    <Presentation
+                      className="mt-0.5 size-4 shrink-0 text-foreground/70"
+                      aria-hidden="true"
+                    />
+                    <p className="text-xs leading-relaxed text-foreground/80">
+                      {skill.evidence}
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>

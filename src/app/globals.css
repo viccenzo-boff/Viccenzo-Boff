@@ -888,6 +888,49 @@
   color: color-mix(in srgb, var(--signature-accent) 24%, transparent);
 }
 
+/* ===== Competências Comportamentais: cards com barra de prova (T6) =====
+   Diferencia a seção: nem tile de ícone (T4) nem número fantasma (T5), mas uma
+   barra de acento fina colada à borda esquerda de cada card (a "barra de prova").
+   Em repouso é neutra (--border, 100% monocromático); no hover/focus ela se
+   PREENCHE de baixo para cima com o gradiente vertical da assinatura
+   (--scroll-line-from/via/to, mesma ordem/cor da linha) — charge-up via
+   background-size 100% 0% → 100% 100% ancorado na base (não é transform, e a
+   assinatura só aparece na interação, seguindo a dose homeopática do PRD §8). O
+   ::before absoluto é recortado nos cantos arredondados pelo overflow-hidden que
+   o Card já traz. O halo interno da barra reforça o "acender"; o halo externo do
+   card vem de .signature-hover (fonte única). */
+.soft-skill-card {
+  position: relative;
+}
+
+.soft-skill-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background-color: var(--border);
+  background-image: linear-gradient(
+    to top,
+    var(--scroll-line-to),
+    var(--scroll-line-via),
+    var(--scroll-line-from)
+  );
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 0%;
+  transition:
+    background-size 340ms ease,
+    box-shadow 340ms ease;
+}
+
+.soft-skill-card:hover::before,
+.soft-skill-card:focus-within::before {
+  background-size: 100% 100%;
+  box-shadow: 0 0 8px 0 color-mix(in srgb, var(--signature-accent) 45%, transparent);
+}
+
 /* ===== Interação de assinatura: glow no hover/focus (fonte única) =====
    A mecânica que nasceu em Tecnologias (T4) vira a interação PRINCIPAL da
    página: no hover/focus o elemento "acende" com a tinta da assinatura — a via
@@ -1044,5 +1087,10 @@
   }
   .project-cta:hover svg {
     transform: none;
+  }
+  /* Barra de prova das Comportamentais: o hover ainda acende a barra, mas sem o
+     "charge-up" — o preenchimento aparece instantâneo (sem movimento). */
+  .soft-skill-card::before {
+    transition: none;
   }
 }
