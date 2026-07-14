@@ -1030,6 +1030,105 @@
   }
 }
 
+/* ===== Monitorias Acadêmicas: índice com pontilhado + coda (T8) =====
+   A última seção vira um "sumário de livro": cada monitoria é uma linha de
+   índice — numeração fantasma discreta (01–05), título e período conectados por
+   dot leaders (pontilhado tipográfico). Leitura editorial ÚNICA na página:
+   nenhuma outra seção é um índice pontilhado. As linhas são bg-background opacas
+   (invariante §5.5): a linha global passa atrás e só aparece nos vãos entre elas,
+   nunca pelos vãos das letras. No hover, um lift leve + o pontilhado e o número
+   tingidos pela assinatura (dose homeopática, só na interação — Hero e linha
+   seguem os donos da assinatura, PRD §8). O reveal por linha usa a primitiva
+   .section-reveal no <li>; o lift mora no .monitoria-row interno para não
+   disputar o transform (fill both) do reveal. Fecha com a coda (mais abaixo). */
+.monitoria-row {
+  transition: transform 320ms ease;
+}
+
+.monitoria-row:hover {
+  transform: translateY(-2px);
+}
+
+.monitoria-number {
+  flex: none;
+  width: 1.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--foreground) 26%, transparent);
+  transition: color 320ms ease;
+}
+
+.monitoria-title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.monitoria-period {
+  flex: none;
+}
+
+/* Dot leaders: pontos redondos (radial-gradient) repetidos na horizontal,
+   assentados na baseline do texto — um item flex sem baseline própria usa sua
+   borda inferior como baseline, então os 3px de altura caem colados à linha de
+   base. A camada da assinatura é um ::after idêntico que só acende no hover:
+   background-image não transita entre gradientes, mas opacity sim — daí o fade
+   por opacidade em vez de troca de cor. flex-basis generoso faz o leader (e o
+   período) quebrarem para a linha de baixo quando o título é longo no mobile. */
+.monitoria-leader {
+  position: relative;
+  flex: 1 1 4rem;
+  min-width: 2rem;
+  align-self: baseline;
+  height: 3px;
+  background-image: radial-gradient(circle at center, var(--border) 1.1px, transparent 1.4px);
+  background-size: 8px 3px;
+  background-repeat: repeat-x;
+  background-position: left center;
+}
+
+.monitoria-leader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at center,
+    var(--signature-accent) 1.1px,
+    transparent 1.4px
+  );
+  background-size: 8px 3px;
+  background-repeat: repeat-x;
+  background-position: left center;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.monitoria-row:hover .monitoria-leader::after {
+  opacity: var(--scroll-line-opacity);
+}
+
+.monitoria-row:hover .monitoria-number {
+  color: color-mix(in srgb, var(--signature-accent) 60%, transparent);
+}
+
+/* Coda: cue de fechamento espelhando o scroll cue do Hero (mesma pílula
+   circular; simetria abertura/fechamento). O chevron aponta para cima (voltar
+   ao topo) com o mesmo nudge suave do Hero, porém invertido. */
+.coda-cue-icon {
+  animation: coda-cue-nudge 2.4s ease-in-out infinite;
+}
+
+@keyframes coda-cue-nudge {
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
 /* ===== Interação de assinatura: glow no hover/focus (fonte única) =====
    A mecânica que nasceu em Tecnologias (T4) vira a interação PRINCIPAL da
    página: no hover/focus o elemento "acende" com a tinta da assinatura — a via
@@ -1195,6 +1294,15 @@
   /* Ponto de status da graduação: sem pulse — o anel para de expandir e
      colapsa sobre o dot (resta um ponto neutro estático). */
   .status-dot::after {
+    animation: none;
+  }
+  /* Monitorias: sem lift no hover das linhas e sem nudge do cue da coda; o
+     pontilhado ainda acende no hover (cor, não movimento). O reveal por linha
+     já morre com .section-reveal acima. */
+  .monitoria-row:hover {
+    transform: none;
+  }
+  .coda-cue-icon {
     animation: none;
   }
 }
