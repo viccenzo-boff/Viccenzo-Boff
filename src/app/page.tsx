@@ -1,6 +1,5 @@
-import { AcademicBackground } from "@/components/custom/academic-background";
 import { AnimatedScrollLine } from "@/components/custom/animated-scroll-line";
-import { AcademicMonitoring } from "@/components/custom/academic-monitoring";
+import { EducationAndDevelopment } from "@/components/custom/education-and-development";
 import { ExperienceTimeline } from "@/components/custom/experience-timeline";
 import { Hero } from "@/components/custom/hero";
 import { MetricsDashboard } from "@/components/custom/metrics-dashboard";
@@ -16,8 +15,7 @@ export default function Home() {
         <ExperienceTimeline />
         <Projects />
         <SkillsAndTools />
-        <AcademicBackground />
-        <AcademicMonitoring />
+        <EducationAndDevelopment />
       </main>
       <AnimatedScrollLine />
     </>
