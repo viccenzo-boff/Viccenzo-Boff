@@ -804,7 +804,7 @@
 /* ===== Tecnologias: categorias com identidade (T4) =====
    Diferencia a seção da irmã "Competências" (visual idêntico até aqui): cada
    card ganha um tile arredondado com o ícone lucide da categoria no header
-   (mapeamento tipado em technologies.tsx; ícone aria-hidden — o título textual
+   (mapeamento tipado em skills-and-tools.tsx; ícone aria-hidden — o título textual
    segue o rótulo acessível). O tile nasce neutro (muted + border) e revela a
    assinatura só no hover do card, em dose homeopática — Hero e linha seguem os
    donos da assinatura (PRD §8). */
@@ -822,7 +822,7 @@
 
 /* Interação (mouse; o estado estático é monocromático e completo): a moldura e
    o halo do card vêm da interação de assinatura compartilhada (.signature-hover
-   — fonte única mais abaixo, aplicada ao Card em technologies.tsx). Aqui fica só
+   — fonte única mais abaixo, aplicada ao Card em skills-and-tools.tsx). Aqui fica só
    o que é próprio da seção: o hover/focus do card acende o tile do ícone e o
    hover do badge tinge a borda (a base transition-all do badgeVariants anima a
    cor). Tudo deriva de --signature-accent. */
