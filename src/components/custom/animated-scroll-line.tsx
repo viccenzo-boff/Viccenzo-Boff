@@ -3,18 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useScroll, useTransform } from "motion/react";
 
-// A linha nasce fora da borda esquerda da tela, no vão entre o título da
-// primeira seção ("Painel de Impacto") e o primeiro card, e desce ancorada ao
-// DOM real (nada de frações fixas do documento — elas caem em lugares
-// diferentes no mobile e no desktop). Em cada seção seguinte: um "portão"
-// prende a linha no trilho direito exatamente na faixa vertical do título e
-// um mergulho leva ao centro do conteúdo — profundo à esquerda em seções
-// alternadas, suave ao meio nas demais (~1 travessia por seção). Tangentes
-// verticais em todas as âncoras: curva monotônica em y — cada faixa de
-// título é cruzada uma única vez, sempre no trilho, o que garante que a
-// linha nunca passa por cima do texto de um título. Nos portões, o flanco
-// mais largo é recolhido até a curvatura do mais apertado (junção G2): a
-// ponta no trilho fecha redonda, com o mesmo raio dos dois lados.
+// A linha vive inteiramente numa FAIXA ESTREITA À DIREITA da tela: nasce fora
+// da borda direita, no vão entre o título da primeira seção ("Painel de
+// Impacto") e o primeiro card, e desce ancorada ao DOM real (nada de frações
+// fixas do documento — elas caem em lugares diferentes no mobile e no
+// desktop). Em cada seção seguinte: um "portão" prende a linha no extremo
+// direito da faixa exatamente na faixa vertical do título e um mergulho recua
+// só até a borda interna da faixa (~1 oscilação por seção). A curva JAMAIS
+// cruza o centro nem a esquerda, onde ficam os títulos alinhados à esquerda —
+// o não-cruzamento passa a ser garantido pela GEOMETRIA (a faixa é disjunta
+// da coluna dos títulos), reforçado pela monotonia em y (cada faixa vertical
+// de título é atravessada uma única vez, sempre presa ao trilho direito).
+// Tangentes verticais em todas as âncoras. Nos portões, o flanco mais largo é
+// recolhido até a curvatura do mais apertado (junção G2): a ponta no trilho
+// fecha redonda, com o mesmo raio dos dois lados.
 //
 // A monotonia em y também alimenta o desenho: um mapa y → fração do
 // comprimento converte a âncora da ponta (~45% da altura do viewport,
@@ -22,21 +24,25 @@ import { motion, useMotionValue, useScroll, useTransform } from "motion/react";
 // com o scroll: a fração é função pura da posição de scroll, e a linha só se
 // move quando (e na exata proporção em que) a página se move.
 
-// Trilho direito: fração mínima da largura e folga além do título mais largo
-const RAIL_X_FRACTION = 0.9;
+// Extremo direito da faixa: fração mínima da largura (âncora do título/portão)
+// e folga além do título mais largo, limitada à borda direita.
+const RAIL_X_FRACTION = 0.92;
 const RAIL_TITLE_CLEARANCE = 26;
 const RAIL_EDGE_MARGIN = 12;
 
-// Mergulhos ao centro do conteúdo: profundo (esquerda) alterna com suave (meio)
-const DIP_DEEP_X_FRACTION = 0.07;
-const DIP_SHALLOW_X_FRACTION = 0.5;
+// Borda interna da faixa: o quanto o mergulho ao conteúdo recua para dentro,
+// ainda dentro da margem direita (jamais no miolo do texto, à esquerda). A
+// oscilação da linha fica confinada a ≈ [DIP_X_FRACTION, RAIL_X_FRACTION].
+const DIP_X_FRACTION = 0.76;
 
-// Início fora da tela (esconde o linecap redondo) com saída horizontal
+// Início fora da borda DIREITA (esconde o linecap redondo). O braço de
+// controle horizontal também mora na faixa, então a entrada varre de cima
+// para baixo dentro da margem direita — sem nunca atravessar a tela.
 const START_EDGE_OVERSHOOT = 16;
-const START_PULL = 0.35;
+const START_ARM_X_FRACTION = 0.88;
 
-// Saída pelo rodapé, além da borda inferior do documento
-const EXIT_X_FRACTION = 0.6;
+// Saída pelo rodapé, além da borda inferior do documento, mantida na faixa
+const EXIT_X_FRACTION = 0.8;
 const EXIT_OVERSHOOT = 40;
 
 // Resolução da amostragem do mapa y → fração do comprimento
@@ -50,7 +56,9 @@ const TIP_ANCHOR_FRACTION = 0.45;
 // fluidez (docs/scroll-line-postmortem.md), retestes do usuário rodaram
 // versões velhas em produção sem ninguém perceber — confirme a versão sob
 // teste antes de tirar qualquer conclusão sobre o comportamento da linha.
-const LINE_VERSION = "v2.5-1to1";
+// v2.20: geometria confinada à margem direita (semântica de desenho 1:1 da
+// v2.5 preservada — só as coordenadas x das âncoras mudaram).
+const LINE_VERSION = "v2.20-right-margin";
 
 const GRADIENT_ID = "scroll-line-gradient";
 
@@ -118,15 +126,16 @@ function buildSegments(
   startY: number,
   points: ReadonlyArray<LinePoint>,
 ): CubicSegment[] {
-  const start: LinePoint = [-START_EDGE_OVERSHOOT, startY];
+  const start: LinePoint = [width + START_EDGE_OVERSHOOT, startY];
   // Vão vertical e percurso horizontal efetivo de cada segmento (o braço do
-  // 1º segmento nasce em START_PULL — a saída da borda é horizontal).
+  // 1º segmento nasce em START_ARM_X_FRACTION — a saída da borda direita é
+  // horizontal e dentro da faixa).
   const gaps: number[] = [];
   const runs: number[] = [];
   let previousMeasure = start;
   points.forEach((point, index) => {
     gaps.push(Math.max(point[1] - previousMeasure[1], 1));
-    const armX = index === 0 ? width * START_PULL : previousMeasure[0];
+    const armX = index === 0 ? width * START_ARM_X_FRACTION : previousMeasure[0];
     runs.push(Math.max(Math.abs(point[0] - armX), 1));
     previousMeasure = point;
   });
@@ -167,10 +176,10 @@ function buildSegments(
   points.forEach((point, index) => {
     const [x, y] = point;
     const [previousX, previousY] = previous;
-    // Saída horizontal rente à borda rumo ao primeiro portão no trilho
+    // Saída horizontal rente à borda direita rumo ao primeiro portão no trilho
     const control1: LinePoint =
       index === 0
-        ? [width * START_PULL, startY]
+        ? [width * START_ARM_X_FRACTION, startY]
         : [previousX, previousY + (startArms[index] ?? 0)];
     segments.push({
       from: previous,
@@ -264,10 +273,9 @@ function buildLayout(size: OverlaySize): LineLayout | null {
     width - RAIL_EDGE_MARGIN,
   );
   const points: Array<LinePoint> = [];
-  sections.forEach((section, index) => {
+  sections.forEach((section) => {
     points.push([railX, section.titleMidY]);
-    const dipXFraction = index % 2 === 0 ? DIP_DEEP_X_FRACTION : DIP_SHALLOW_X_FRACTION;
-    points.push([width * dipXFraction, section.contentMidY]);
+    points.push([width * DIP_X_FRACTION, section.contentMidY]);
   });
   points.push([width * EXIT_X_FRACTION, height + EXIT_OVERSHOOT]);
   const segments = buildSegments(width, firstSection.gapMidY, points);

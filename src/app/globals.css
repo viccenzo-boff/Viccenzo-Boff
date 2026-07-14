@@ -420,15 +420,26 @@
    centro do bloco. */
 .section-heading {
   position: relative;
-  padding-left: 2.5rem;
+  z-index: 10;
+  /* Escudo visual: o cabeçalho ganha uma placa OPACA que corre atrás do texto
+     e oculta a Scroll Progress Line. A cor da placa é herdada da própria seção
+     (cada `h2` recebe `bg-background`/`bg-muted` conforme o fundo da seção,
+     §5.3) — a placa some no fundo (invisível ao olho) e só "recorta" a linha
+     que porventura passe pela faixa do título, sem vazar pelos vãos das letras
+     (§5.5). `width: fit-content` cola a placa ao texto; o `padding-left` de
+     2.5rem já reservava o vão do tick e faz as vezes de padding esquerdo. */
+  width: fit-content;
+  padding: 0.25rem 1rem 0.25rem 2.5rem;
+  border-radius: 0.5rem;
 }
 
 .section-heading::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.5625rem;
-  top: calc(0.5lh - 1px);
+  /* +0.25rem = o padding-top da placa, para o tick seguir centrado na 1ª linha */
+  top: calc(0.25rem + 0.5625rem);
+  top: calc(0.25rem + 0.5lh - 1px);
   width: 1.75rem;
   height: 2px;
   border-radius: 9999px;
