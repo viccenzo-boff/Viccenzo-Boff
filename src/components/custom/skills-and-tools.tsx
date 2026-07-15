@@ -70,7 +70,7 @@ export function SkillsAndTools() {
   return (
     <section className="scroll-mt-20 border-b border-border bg-background">
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="section-heading bg-background text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <h2 className="section-heading bg-background text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Habilidades e Ferramentas
         </h2>
 
@@ -102,7 +102,7 @@ export function SkillsAndTools() {
                             key={skill}
                             variant="outline"
                             className={cn(
-                              "tech-badge section-reveal tech-badge-reveal rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground",
+                              "tech-badge section-reveal tech-badge-reveal h-auto max-w-full whitespace-normal rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground",
                               TECH_BADGE_STAGGER[index] ?? "",
                             )}
                           >
@@ -136,14 +136,11 @@ export function SkillsAndTools() {
                 a folga editorial no desktop, onde o grid de 2 colunas não corta. */}
             <div className="mt-6 rounded-2xl bg-muted p-3 sm:p-8">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                {technicalSkills.map((group, groupIndex) => (
+                {technicalSkills.map((group) => (
                   <div
                     key={group.category}
                     className="skill-panel signature-hover relative overflow-clip rounded-xl border border-border bg-background p-6"
                   >
-                    <span className="skill-panel-number" aria-hidden="true">
-                      {String(groupIndex + 1).padStart(2, "0")}
-                    </span>
                     <h3 className="signature-hover-text relative text-sm font-semibold text-foreground">
                       {group.category}
                     </h3>
@@ -153,7 +150,7 @@ export function SkillsAndTools() {
                           key={skill}
                           variant="outline"
                           className={cn(
-                            "section-reveal rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground",
+                            "section-reveal h-auto max-w-full whitespace-normal rounded-md border-border bg-background px-2.5 py-1 font-normal text-muted-foreground",
                             SKILL_BADGE_STAGGER[index] ?? "",
                           )}
                         >
@@ -177,7 +174,7 @@ export function SkillsAndTools() {
                   key={skill.title}
                   size="sm"
                   className={cn(
-                    "soft-skill-card section-reveal signature-hover bg-background",
+                    "section-reveal signature-hover bg-background",
                     SOFT_CARD_STAGGER[index] ?? "",
                   )}
                 >

@@ -13,24 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { scrollToSection } from "@/lib/scroll-to-section";
-import { searchIndex } from "@/lib/search-index";
-
-const SECTION_ORDER = [
-  "inicio",
-  "painel-de-impacto",
-  "experiencia-profissional",
-  "projetos",
-  "tecnologias",
-  "matriz-de-competencias",
-  "competencias-comportamentais",
-  "formacao-academica",
-  "monitorias-academicas",
-];
-
-const groupedIndex = SECTION_ORDER.map((sectionId) => {
-  const items = searchIndex.filter((item) => item.sectionId === sectionId);
-  return { sectionId, sectionLabel: items[0]?.sectionLabel ?? sectionId, items };
-}).filter((group) => group.items.length > 0);
+import { groupedSearchIndex } from "@/lib/search-index";
 
 export function SearchCommand() {
   const [open, setOpen] = useState(false);
@@ -77,7 +60,7 @@ export function SearchCommand() {
         <CommandInput placeholder="Buscar por seção, empresa, competência…" />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
-          {groupedIndex.map((group) => (
+          {groupedSearchIndex.map((group) => (
             <CommandGroup key={group.sectionId} heading={group.sectionLabel}>
               {group.items.map((item) => (
                 <CommandItem

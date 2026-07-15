@@ -55,7 +55,7 @@ export function EducationAndDevelopment() {
   return (
     <section className="scroll-mt-20 bg-background">
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="section-heading bg-background text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <h2 className="section-heading bg-background text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Formação e Desenvolvimento
         </h2>
 

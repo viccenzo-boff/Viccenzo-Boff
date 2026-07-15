@@ -1,6 +1,11 @@
 const HIGHLIGHT_CLASS = "anchor-highlight";
 const HIGHLIGHT_DURATION_MS = 1600;
 
+/**
+ * Rola suavemente até a seção `sectionId` e aplica um destaque temporário (`.anchor-highlight`, 1,6s).
+ * No-op quando o elemento não existe. Respeita `prefers-reduced-motion` (usa scroll `"auto"` em vez de `"smooth"`).
+ * Reinicia a animação de destaque via reflow forçado quando a mesma seção é reselecionada.
+ */
 export function scrollToSection(sectionId: string) {
   const target = document.getElementById(sectionId);
   if (!target) return;

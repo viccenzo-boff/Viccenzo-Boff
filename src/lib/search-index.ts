@@ -133,3 +133,33 @@ function buildSearchIndex(): SearchIndexItem[] {
 }
 
 export const searchIndex: SearchIndexItem[] = buildSearchIndex();
+
+/**
+ * Ordem canônica das seções na busca. Fonte única de verdade compartilhada
+ * com `SearchCommand`: cada `sectionId` produzido por `buildSearchIndex` DEVE
+ * existir aqui, senão o grupo é filtrado e some da busca (foi a raiz do bug de
+ * busca corrigido na V2.0). Coberto por `search-index.test.ts`.
+ */
+export const SECTION_ORDER = [
+  "inicio",
+  "painel-de-impacto",
+  "experiencia-profissional",
+  "projetos",
+  "tecnologias",
+  "matriz-de-competencias",
+  "competencias-comportamentais",
+  "formacao-academica",
+  "monitorias-academicas",
+] as const;
+
+export interface SearchGroup {
+  sectionId: string;
+  sectionLabel: string;
+  items: SearchIndexItem[];
+}
+
+/** Índice agrupado por seção, na ordem do `SECTION_ORDER`, sem grupos vazios. */
+export const groupedSearchIndex: SearchGroup[] = SECTION_ORDER.map((sectionId) => {
+  const items = searchIndex.filter((item) => item.sectionId === sectionId);
+  return { sectionId, sectionLabel: items[0]?.sectionLabel ?? sectionId, items };
+}).filter((group) => group.items.length > 0);

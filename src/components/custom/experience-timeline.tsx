@@ -15,7 +15,7 @@ export function ExperienceTimeline() {
   return (
     <section id="experiencia-profissional" className="scroll-mt-20 border-b border-border bg-background">
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-16 sm:py-24 lg:px-8">
-        <h2 className="section-heading bg-background text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <h2 className="section-heading bg-background text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Experiência Profissional
         </h2>
 

@@ -101,7 +101,7 @@
        linha). Fonte única do glow de assinatura (.signature-hover/-text): como
        referencia --scroll-line-via de forma tardia (substituição no ponto de
        uso), resolve com a variante correta em light e dark sem precisar ser
-       redefinido no bloco .dark — mesma técnica de --metallic-text-gradient. */
+       redefinido no bloco .dark — mesma técnica de resolução tardia de variável. */
     --signature-accent: var(--scroll-line-via);
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -195,33 +195,11 @@
   animation: scroll-line-pulse 5s ease-in-out infinite;
 }
 
-/* ===== Assinatura tipográfica compartilhada =====
-   Gradiente metálico dos glifos — nome do Hero e números do Painel de
-   Impacto. Definido em :root, que é o mesmo <html> que recebe .dark:
-   var(--foreground) resolve com o tema certo antes de o valor herdar. A
-   parada mais clara nunca desce de 78% do foreground — contraste de large
-   text preservado nos dois temas. */
-:root {
-  --metallic-text-gradient: linear-gradient(
-    180deg,
-    var(--foreground) 55%,
-    color-mix(in srgb, var(--foreground) 78%, var(--background)) 100%
-  );
-}
-
-/* Fora de @supports (background-clip: text) o texto fica sólido em
-   --foreground — mesmo fallback do hero-name. */
+/* Nome do Hero e números do Painel de Impacto: cor sólida em --foreground.
+   O gradiente metálico dos glifos foi removido na auditoria de 2026-07 para
+   reduzir o acúmulo de recursos de assinatura. */
 .metallic-text {
   color: var(--foreground);
-}
-
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-  .metallic-text {
-    background-image: var(--metallic-text-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
 }
 
 /* ===== Hero: camadas de profundidade (V2.6) =====
@@ -317,42 +295,6 @@
 
 .dark .hero-name {
   --hero-name-glow: drop-shadow(0 0 28px color-mix(in srgb, var(--scroll-line-via) 40%, transparent));
-}
-
-/* Sheen periódico sobre o gradiente metálico compartilhado (definido acima
-   em --metallic-text-gradient, com o racional de contraste). O fallback
-   acima mantém o texto sólido em engines sem background-clip: text. */
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-  .hero-name {
-    background-image:
-      linear-gradient(
-        115deg,
-        transparent 0%,
-        transparent 42%,
-        var(--hero-sheen) 50%,
-        transparent 58%,
-        transparent 100%
-      ),
-      var(--metallic-text-gradient);
-    background-size: 250% 100%, 100% 100%;
-    background-repeat: no-repeat;
-    background-position: 100% 0, 0 0;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: hero-name-sheen 9s ease-in-out infinite;
-    animation-delay: 2.2s;
-  }
-}
-
-@keyframes hero-name-sheen {
-  0% {
-    background-position: 100% 0, 0 0;
-  }
-  32%,
-  100% {
-    background-position: 0% 0, 0 0;
-  }
 }
 
 .hero-rise {
@@ -871,82 +813,16 @@
   }
 }
 
-/* ===== Competências e Metodologias: painéis editoriais numerados (T5) =====
-   Diferencia a seção da irmã "Tecnologias" (T4, cards com tile de ícone +
-   pop-in): aqui os grupos viram painéis editoriais com uma numeração FANTASMA
-   gigante (01–05) sangrando no canto superior — dose ínfima do foreground (5%),
-   decorativa e aria-hidden (o <h3> textual é o rótulo real, então a11y intacta).
-   No hover/focus do painel a numeração é tingida pela assinatura
-   (--signature-accent), acompanhando o halo de .signature-hover (fonte única,
-   mais abaixo — o painel a consome como superfície). O painel é bg-background
-   opaco (invariante da linha, §5.5) e plano (sem ring/shadow do Card), o que
-   reforça a leitura distinta da T4 à primeira vista. overflow: clip (no
-   componente) recorta o número que sangra — clip, NUNCA hidden (§9): hidden
-   tornaria o painel scroll container e o reveal por view() dos badges saltaria
-   ao estado final. O conteúdo (h3/badges) é position: relative → pinta acima do
-   número (mesmo contexto de empilhamento, ordem do DOM). */
-.skill-panel-number {
-  position: absolute;
-  top: -0.75rem;
-  right: 0.75rem;
-  font-size: 5rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: color-mix(in srgb, var(--foreground) 5%, transparent);
-  pointer-events: none;
-  user-select: none;
-  transition: color 300ms ease;
-}
+/* ===== Engenharia e Metodologias: painéis editoriais planos =====
+   Painéis bg-background planos (sem ring/shadow do Card) numa bandeja muted —
+   leitura distinta da Stack Tecnológica (cards com tile de ícone). A numeração
+   fantasma 01–05 foi removida na auditoria de 2026-07 (era decorativa sobre uma
+   não-sequência; keep dos números só nas Monitorias, que são um índice real). */
 
-.signature-hover:hover .skill-panel-number,
-.signature-hover:focus-within .skill-panel-number {
-  color: color-mix(in srgb, var(--signature-accent) 24%, transparent);
-}
-
-/* ===== Competências Comportamentais: cards com barra de prova (T6) =====
-   Diferencia a seção: nem tile de ícone (T4) nem número fantasma (T5), mas uma
-   barra de acento fina colada à borda esquerda de cada card (a "barra de prova").
-   Em repouso é neutra (--border, 100% monocromático); no hover/focus ela se
-   PREENCHE de baixo para cima com o gradiente vertical da assinatura
-   (--scroll-line-from/via/to, mesma ordem/cor da linha) — charge-up via
-   background-size 100% 0% → 100% 100% ancorado na base (não é transform, e a
-   assinatura só aparece na interação, seguindo a dose homeopática do PRD §8). O
-   ::before absoluto é recortado nos cantos arredondados pelo overflow-hidden que
-   o Card já traz. O halo interno da barra reforça o "acender"; o halo externo do
-   card vem de .signature-hover (fonte única). */
-.soft-skill-card {
-  position: relative;
-}
-
-.soft-skill-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 3px;
-  background-color: var(--border);
-  background-image: linear-gradient(
-    to top,
-    var(--scroll-line-to),
-    var(--scroll-line-via),
-    var(--scroll-line-from)
-  );
-  background-repeat: no-repeat;
-  background-position: bottom;
-  background-size: 100% 0%;
-  transition:
-    background-size 340ms ease,
-    box-shadow 340ms ease;
-}
-
-.soft-skill-card:hover::before,
-.soft-skill-card:focus-within::before {
-  background-size: 100% 100%;
-  box-shadow: 0 0 8px 0 color-mix(in srgb, var(--signature-accent) 45%, transparent);
-}
+/* ===== Perfil Comportamental: cards limpos =====
+   A "barra de prova" (side-stripe de 3px à esquerda) foi removida na auditoria
+   de 2026-07 (ban de side-stripe do impeccable). Os 4 cards usam a borda cheia
+   do Card do shadcn + o glow de .signature-hover no hover — sem acento lateral. */
 
 /* ===== Formação Acadêmica e Idiomas: medidores + ponto de status (T7) =====
    Dois detalhes dão identidade ao card único da seção, sem sair da estética:
@@ -1203,9 +1079,9 @@
   text-shadow: 0 0 20px color-mix(in srgb, var(--signature-accent) 42%, transparent);
 }
 
-/* Número do Painel de Impacto: é .metallic-text, pintado por background-clip:
-   text (color/text-shadow são no-op sob o clip) — o glow da assinatura vem por
-   filter drop-shadow, aceso no hover do card (.signature-hover no Card). */
+/* Número do Painel de Impacto (.metallic-text, cor sólida em --foreground): o
+   glow da assinatura vem por filter drop-shadow, aceso no hover do card
+   (.signature-hover no Card). */
 .metrics-figure {
   transition: filter 300ms ease;
 }
@@ -1236,9 +1112,9 @@
   opacity: 1;
 }
 
-/* Nome do Hero: texto clipado (color/text-shadow no-op sob o background-clip) —
-   o hover intensifica o próprio drop-shadow do nome (--hero-name-glow) na cor da
-   assinatura, vencendo .hero-name e .dark .hero-name por ordem de fonte. */
+/* Nome do Hero (cor sólida em --foreground): o hover intensifica o próprio
+   drop-shadow do nome (--hero-name-glow) na cor da assinatura, vencendo
+   .hero-name e .dark .hero-name por ordem de fonte. */
 .hero-name {
   transition: filter 300ms ease;
 }
@@ -1296,11 +1172,6 @@
   }
   .project-cta:hover svg {
     transform: none;
-  }
-  /* Barra de prova das Comportamentais: o hover ainda acende a barra, mas sem o
-     "charge-up" — o preenchimento aparece instantâneo (sem movimento). */
-  .soft-skill-card::before {
-    transition: none;
   }
   /* Ponto de status da graduação: sem pulse — o anel para de expandir e
      colapsa sobre o dot (resta um ponto neutro estático). */

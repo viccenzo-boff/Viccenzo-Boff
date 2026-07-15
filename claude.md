@@ -33,6 +33,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 | --- | --- |
 | `pnpm dev` | Dev server em `http://localhost:3000` |
 | `pnpm lint` | ESLint (meta: zero warnings) |
+| `pnpm test:unit` | Testes de unidade (Vitest + happy-dom) — funções puras de `src/lib` |
 | `pnpm test:e2e` | Suíte Playwright — 30 testes contra o build de produção (porta 3100) |
 | `pnpm build` | `verify:cv-pdf && next build` (falha se o PDF estiver dessincronizado) |
 | `pnpm generate:cv-pdf` | (Re)gera o PDF + manifesto de hash (requer Chromium do Playwright local) |
@@ -40,7 +41,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 
 ## 5. Definição de Pronto
 
-Antes de declarar uma tarefa concluída: lint sem warnings; 30/30 testes e2e passando; PDF regenerado se `cvData` ou o template de impressão mudaram; Lighthouse Acessibilidade revalidado se a mudança tocou UI/contraste.
+Antes de declarar uma tarefa concluída: lint sem warnings; testes de unidade (Vitest) verdes e 30/30 testes e2e passando; PDF regenerado se `cvData` ou o template de impressão mudaram; Lighthouse Acessibilidade revalidado se a mudança tocou UI/contraste.
 
 ## 6. Auto-Manutenção da Documentação (regra permanente)
 

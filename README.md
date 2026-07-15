@@ -29,14 +29,15 @@ Portfólio/currículo digital de página única, projetado para recrutadores té
 | Linguagem | TypeScript estrito (`any` proibido) |
 | UI | Tailwind CSS v4 + shadcn/ui, paleta expressa só por tokens semânticos |
 | Busca | cmdk + Radix Dialog, índice derivado de `src/data/cv.ts` |
-| Testes | Playwright — 26 testes e2e contra o build de produção |
+| Testes | Playwright — 30 testes e2e + Vitest/happy-dom — 19 testes de unidade |
 
 Princípios: **dados primeiro** (todo o conteúdo vive tipado em [`src/data/cv.ts`](src/data/cv.ts) — a tela e o PDF são projeções dele), componentes pequenos com responsabilidade única, mobile first e HTML semântico. A arquitetura completa está documentada em [`.claudecode/architecture.md`](.claudecode/architecture.md) e as decisões de produto em [`.claudecode/prd.md`](.claudecode/prd.md).
 
 ## Qualidade de Engenharia
 
 * **Lighthouse Acessibilidade 100/100** em light e dark (baseline permanente).
-* **26 testes e2e** (Desktop Chrome 1280px + Mobile Chrome 375px) cobrindo tema, busca, contato e download do PDF — incluindo magic bytes `%PDF-` do asset.
+* **30 testes e2e** (Desktop Chrome 1280px + Mobile Chrome 375px) cobrindo tema, busca, contato e download do PDF — incluindo magic bytes `%PDF-` do asset.
+* **19 testes de unidade** (Vitest + happy-dom) sobre as funções puras de `src/lib` — links de e-mail/WhatsApp, índice de busca e navegação ancorada.
 * **ESLint zero warnings** e TypeScript estrito.
 * **Invariante de sincronização do PDF:** o build falha (local e na Vercel) se o PDF versionado não corresponder ao conteúdo atual — ver abaixo.
 
@@ -59,7 +60,8 @@ Pré-requisitos: Node.js 24+ e pnpm.
 pnpm install                       # instala as dependências
 pnpm dev                           # servidor de desenvolvimento em http://localhost:3000
 pnpm lint                          # ESLint
-pnpm test:e2e                      # suíte Playwright (26 testes contra o build de produção)
+pnpm test:unit                     # testes de unidade (Vitest) — funções puras de src/lib
+pnpm test:e2e                      # suíte Playwright (30 testes contra o build de produção)
 pnpm build                         # verificação do PDF + next build
 pnpm generate:cv-pdf               # (re)gera o PDF do currículo + manifesto de sincronização
 pnpm generate:readme-screenshots   # (re)gera os screenshots deste README (site rodando via pnpm start)
