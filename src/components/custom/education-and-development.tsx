@@ -1,5 +1,6 @@
 import { ChevronUp } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cvData } from "@/data/cv";
 import type { LanguageLevel } from "@/types/cv.types";
@@ -50,7 +51,7 @@ const BLOCK_SUBTITLE_CLASS =
   "text-xs font-semibold tracking-widest text-muted-foreground uppercase";
 
 export function EducationAndDevelopment() {
-  const { education, languages, monitorias } = cvData;
+  const { education, languages, certifications, monitorias } = cvData;
 
   return (
     <section className="scroll-mt-20 bg-background">
@@ -118,18 +119,74 @@ export function EducationAndDevelopment() {
             </Card>
           </div>
 
-          {/* Bloco 2 — Certificações e Cursos. Ainda não há dados em cvData
-              (nenhum campo `certifications`): o bloco fica estruturado, com um
-              estado vazio discreto no lugar do grid. Quando os dados existirem,
-              adicionar o campo em cv.ts + o grid aqui e o `id` no SECTION_ORDER /
-              índice da busca (§6). O texto opaco sobre bg-background já respeita o
-              invariante da linha (§5.5). */}
+          {/* Bloco 2 — Certificações e Cursos. Grid de cards `cvData.certifications`
+              no mesmo padrão do card de Base Acadêmica (card-hairline + signature-hover
+              sobre bg-background — texto opaco respeita o invariante da linha §5.5).
+              `id` histórico preservado no wrapper (deep-links da busca, §6). */}
           <div id="certificacoes-e-cursos" className="scroll-mt-20">
             <h3 className={BLOCK_SUBTITLE_CLASS}>Certificações e Cursos</h3>
 
-            <p className="mt-6 text-sm text-muted-foreground">
-              Certificações e cursos de especialização serão adicionados em breve.
-            </p>
+            <div className="mt-6 flex flex-col gap-6">
+              {certifications.map((certification) => (
+                <Card
+                  key={certification.id}
+                  size="sm"
+                  className="card-hairline signature-hover bg-background"
+                >
+                  <CardContent>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h4 className="signature-hover-text text-lg font-semibold text-foreground">
+                          {certification.name}
+                        </h4>
+                        <p className="text-sm font-medium text-foreground/80">
+                          {certification.institution} · {certification.period}
+                        </p>
+                      </div>
+                      {certification.workload ? (
+                        <Badge
+                          variant="outline"
+                          className="h-auto w-fit shrink-0 rounded-full border-border/80 bg-background/70 px-3 py-1 text-muted-foreground backdrop-blur-sm"
+                        >
+                          {certification.workload}
+                        </Badge>
+                      ) : null}
+                    </div>
+
+                    {certification.sponsor || certification.credential ? (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {[certification.sponsor, certification.credential]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    ) : null}
+
+                    {certification.description ? (
+                      <p className="mt-4 text-sm leading-relaxed text-foreground/80">
+                        {certification.description}
+                      </p>
+                    ) : null}
+
+                    {certification.highlights.length > 0 ? (
+                      <ul className="mt-4 space-y-2.5">
+                        {certification.highlights.map((highlight) => (
+                          <li
+                            key={highlight}
+                            className="flex gap-3 text-sm leading-relaxed text-foreground/80"
+                          >
+                            <span
+                              className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground"
+                              aria-hidden="true"
+                            />
+                            <span>{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
           {/* Bloco 3 — Liderança Acadêmica e Mentorias (migrado de

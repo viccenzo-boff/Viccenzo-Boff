@@ -118,6 +118,27 @@ function buildSearchIndex(): SearchIndexItem[] {
     keywords: cvData.languages.flatMap((language) => [language.name, language.level]),
   });
 
+  for (const certification of cvData.certifications) {
+    items.push({
+      id: `certification-${certification.id}`,
+      sectionId: "certificacoes-e-cursos",
+      sectionLabel: "Certificações e Cursos",
+      title: certification.name,
+      subtitle: `${certification.institution} · ${certification.period}`,
+      keywords: [
+        certification.institution,
+        certification.period,
+        ...(certification.workload ? [certification.workload] : []),
+        ...(certification.credential ? [certification.credential] : []),
+        ...(certification.sponsor ? [certification.sponsor] : []),
+        ...(certification.description ? [certification.description] : []),
+        ...certification.highlights,
+        "certificação",
+        "curso",
+      ],
+    });
+  }
+
   for (const monitoria of cvData.monitorias) {
     items.push({
       id: `monitoria-${monitoria.title}`,
@@ -149,6 +170,7 @@ export const SECTION_ORDER = [
   "matriz-de-competencias",
   "competencias-comportamentais",
   "formacao-academica",
+  "certificacoes-e-cursos",
   "monitorias-academicas",
 ] as const;
 

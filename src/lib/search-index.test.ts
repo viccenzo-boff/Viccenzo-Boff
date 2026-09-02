@@ -38,6 +38,7 @@ describe("searchIndex", () => {
     expect(countIn("matriz-de-competencias")).toBe(cvData.technicalSkills.length);
     expect(countIn("competencias-comportamentais")).toBe(cvData.softSkills.length);
     expect(countIn("formacao-academica")).toBe(2); // formação + idiomas
+    expect(countIn("certificacoes-e-cursos")).toBe(cvData.certifications.length);
     expect(countIn("monitorias-academicas")).toBe(cvData.monitorias.length);
   });
 

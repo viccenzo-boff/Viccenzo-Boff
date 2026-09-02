@@ -51,6 +51,7 @@ export function CVPrintDocument() {
     technicalSkills,
     education,
     languages,
+    certifications,
     monitorias,
     softSkills,
   } = cvData;
@@ -175,6 +176,36 @@ export function CVPrintDocument() {
               ))}
             </ul>
           </article>
+        </section>
+
+        <section>
+          <h2>Certificações e Cursos</h2>
+          {certifications.map((certification) => (
+            <article key={certification.id}>
+              <div className="item-header">
+                <h3>
+                  {certification.name} — {certification.institution}
+                </h3>
+                <p className="meta">
+                  {certification.period}
+                  {certification.workload ? ` · ${certification.workload}` : ""}
+                </p>
+              </div>
+              {certification.sponsor || certification.credential ? (
+                <p className="meta">
+                  {[certification.sponsor, certification.credential]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              ) : null}
+              {certification.description ? <p>{certification.description}</p> : null}
+              <ul>
+                {certification.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
         </section>
 
         <section>

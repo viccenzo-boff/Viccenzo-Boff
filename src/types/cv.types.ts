@@ -57,6 +57,18 @@ export interface Project {
   liveUrl?: string;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  institution: string;
+  period: string;
+  workload?: string;
+  credential?: string;
+  sponsor?: string;
+  description?: string;
+  highlights: string[];
+}
+
 export interface SoftSkill {
   title: string;
   description: string;
@@ -77,6 +89,7 @@ export interface CVData {
   projects: Project[];
   education: Education;
   languages: Language[];
+  certifications: Certification[];
   monitorias: Monitoria[];
   technologies: SkillGroup[];
   technicalSkills: SkillGroup[];

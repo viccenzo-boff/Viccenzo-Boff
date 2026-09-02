@@ -96,6 +96,25 @@ export const cvData: CVData = {
     { name: "Inglês", level: "Avançado" },
     { name: "Português", level: "Nativo" },
   ],
+  certifications: [
+    {
+      id: "contabilidade-basica",
+      name: "Contabilidade Básica",
+      institution: "UCEFF",
+      period: "2025/2",
+      workload: "80 horas",
+      credential: "Diploma e certificação de conclusão",
+      sponsor: "Custeado pela IXC Soft, cursado em horário de trabalho",
+      description:
+        "Base contábil formal que aprofunda a competência de Conhecimentos Fiscais e de Negócio: dá lastro à análise de regras de negócio fiscais/contábeis em ERPs — leitura de Balanço Patrimonial e DRE e domínio do regime de competência.",
+      highlights: [
+        "Fundamentos e equação patrimonial: Ativo, Passivo e Patrimônio Líquido, a igualdade Ativo = Passivo + PL e a leitura das situações líquidas (incluindo passivo a descoberto), sob o Princípio da Entidade.",
+        "Método das partidas dobradas: lógica de débito e crédito, escrituração no Livro Diário e no Razão (razonetes) e fechamento do Balancete de Verificação.",
+        "Regimes e apuração de resultado: regime de competência vs. caixa, classificação de fatos contábeis (permutativos, modificativos e mistos) e encerramento do exercício (ARE).",
+        "Demonstrações contábeis: estruturação do Balanço Patrimonial (Circulante / Não Circulante) e da DRE, e cálculo do CMV (Estoque Inicial + Compras − Estoque Final).",
+      ],
+    },
+  ],
   monitorias: [
     { title: "Monitor de Gerência de Projetos", period: "2026/1" },
     { title: "Monitor de Interconectividade de Computadores", period: "2025/2" },

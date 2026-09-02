@@ -9,7 +9,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 | `CLAUDE.md` (este) | Regras de comportamento, fluxo de trabalho e comandos | Sempre (carregado automaticamente) |
 | `.claudecode/architecture.md` | **Arquitetura viva**: stack, estrutura, componentes, design system, pipeline do PDF, testes, armadilhas conhecidas | Antes de qualquer mudança de código |
 | `.claudecode/prd.md` | **Produto**: visão, requisitos, decisões de produto com racional, pendências/backlog, histórico de versões | Para escopo, conteúdo e status atual |
-| `.claudecode/cv_base.md` | Conteúdo-fonte bruto do currículo (texto original do usuário) | Ao editar dados em `src/data/cv.ts` |
+| `.claudecode/cv_base.md` | **Espelho legível + spec de entrada** do currículo: reflete 100% de `src/data/cv.ts` e é onde o usuário registra novas informações em linguagem natural (fluxo em §3) | Ao editar dados em `src/data/cv.ts` — os dois devem ficar sincronizados |
 
 ## 2. Regras Invioláveis
 
@@ -19,6 +19,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 ## 3. Princípios de Desenvolvimento
 
 * **Dados primeiro:** antes de escrever/alterar um componente de tela, garanta que os dados que o alimentam estejam mapeados e tipados em `src/data/cv.ts` (fonte única de verdade).
+* **`cv_base.md` é a spec de entrada; `cv.ts` é a fonte de verdade:** o usuário registra qualquer mudança de currículo (curso concluído, novo emprego, projeto, idioma, skill, métrica…) primeiro em `.claudecode/cv_base.md`, em linguagem natural, como uma spec — ele descreve o que aconteceu, você executa. A partir dessa spec, propague a mudança para `src/data/cv.ts` seguindo os padrões do projeto (tipos em `cv.types.ts`, design system por tokens, renderização na tela **e** no PDF) e mantenha os dois **espelhados**: nenhum campo de `cvData` pode faltar no `cv_base.md`, e vice-versa. Quando `cvData` mudar, regenere o PDF (§2) e revalide a Definição de Pronto (§5). Caso a informação exija um campo novo em `cvData` (ex.: primeira certificação → bloco "Certificações e Cursos", hoje estruturado e vazio — `prd.md` §8), crie o tipo/campo, o render, a entrada de busca e o `id` no `SECTION_ORDER` (`architecture.md` §6).
 * **TypeScript estrito:** proibido `any`. Propriedades, retornos de funções e payloads explicitamente tipados.
 * **shadcn/ui primeiro:** para qualquer elemento de UI (botão, card, badge, seletor…), verifique o catálogo do shadcn/ui e instale via CLI antes de criar algo do zero.
 * **Design system por tokens:** paleta monocromática zinc expressa **exclusivamente** via tokens semânticos (`bg-background`, `bg-muted`, `text-foreground`, `text-muted-foreground`…). Proibido hardcodear classes `zinc-*` em `src/components/custom`. Light Mode corporativo é o padrão; Dark Mode manual deve ser preservado em toda mudança visual (regras de contraste: `architecture.md` §5).
