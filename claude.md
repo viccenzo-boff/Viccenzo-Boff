@@ -13,7 +13,7 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 
 ## 2. Regras Invioláveis
 
-* **PROIBIDO REALIZAR COMMITS:** nunca execute `git commit` nem `git push`, mesmo com o trabalho pronto e verificado. Quem commita é o usuário. Ao concluir, deixe as mudanças no working tree, informe que estão prontas para revisão e sugira uma mensagem de commit no padrão Conventional Commits (ex.: `feat(ui): add key metrics dashboard component`) — sem executá-la.
+* **COMMIT é seu; `git push` é do usuário.** Você commita o trabalho concluído e o deixa pronto para publicação; **nunca** execute `git push` sem pedido explícito do usuário naquela conversa — é o passo que sai da máquina dele e dispara o deploy na Vercel. Regra decidida pelo usuário em 2026-09-02, invertendo a proibição anterior de commits. Detalhes em §8.
 * **PDF do currículo é versionado, não gerado no build:** ao alterar `src/data/cv.ts` ou `src/components/print/cv-print-document.tsx`, rode `pnpm generate:cv-pdf` e inclua `public/curriculo-viccenzo-boff.pdf` + `scripts/cv-pdf.manifest.json` nas mudanças a commitar. O `pnpm build` falha (local e na Vercel) se o PDF estiver dessincronizado — guarda `verify:cv-pdf`. **Nunca** tente gerar o PDF no build da Vercel: a imagem de build não executa o Chromium do Playwright (`libnspr4.so` ausente — causa da falha do primeiro deploy). Mecanismo completo: `architecture.md` §7.
 
 ## 3. Princípios de Desenvolvimento
@@ -44,6 +44,8 @@ Você é o Engenheiro de Software Sênior responsável pelo site de currículo t
 
 Antes de declarar uma tarefa concluída: lint sem warnings; testes de unidade (Vitest) verdes e 30/30 testes e2e passando; PDF regenerado se `cvData` ou o template de impressão mudaram; Lighthouse Acessibilidade revalidado se a mudança tocou UI/contraste.
 
+**A Definição de Pronto é pré-requisito do commit (§8), não do push.** Commit de estado quebrado não existe: se um portão falhar, o trabalho fica no working tree e você reporta a falha com a saída do comando.
+
 ## 6. Auto-Manutenção da Documentação (regra permanente)
 
 > Sempre que você (Claude) finalizar uma tarefa completa de desenvolvimento no sistema, você deve proativamente sugerir as atualizações necessárias nos arquivos architecture.md, claude.md e prd.md. O objetivo é refletir o novo estado do projeto e manter estritamente esta mesma estrutura otimizada, garantindo que a documentação nunca fique defasada.
@@ -64,3 +66,51 @@ Quando o usuário se ausentar e autorizar você a decidir "como achar melhor", a
 3. **Novas tarefas descobertas durante a execução:** o que surgiu, por que importa e a recomendação (adotar ou descartar), para o usuário triar.
 
 Regras de legibilidade: cada item deve ser autossuficiente — título descritivo + contexto em linguagem direta. Identificadores curtos (B1, B2…) são apenas apelidos opcionais e **nunca** substituem a descrição; o usuário precisa entender cada pendência sem perguntar "o que é isso?". Ao reencontrar o usuário, ofereça percorrer os itens um a um com perguntas objetivas e opções prontas (confirmar / ajustar / reverter).
+
+## 8. Commits
+
+### 8.1 As três respostas duráveis (decididas em 2026-09-02)
+
+| Pergunta | Resposta | Por quê |
+| --- | --- | --- |
+| Quem commita? | **Você (Claude)** | Inverte a proibição anterior. O usuário revisa pelo histórico, não pelo working tree. |
+| Quem publica? | **O usuário** | `git push` só com pedido explícito na conversa: é o gatilho do deploy de produção na Vercel, e vale ter um humano nele. Ao concluir, diga que está pronto para publicar — não pergunte a cada commit. |
+| Branch ou `main`? | **Direto na `main`** | O histórico do repositório é linear e nunca teve branch nem revisão de pares. Em repositório solo, PR é revisão de si para si: adiciona cerimônia sem adicionar revisor, e os portões da §5 já são a rede de segurança. Reavaliar se algum dia houver segunda pessoa. |
+
+### 8.2 Formato da mensagem (Conventional Commits)
+
+```text
+tipo(escopo): assunto no imperativo, minusculo, sem ponto final
+
+Corpo opcional, quebrado em ~72 colunas, explicando o PORQUE: a alternativa
+descartada, a medicao que sustentou a decisao, a restricao que forcou o
+caminho. O diff ja diz o QUE.
+
+Refs: #12
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+```
+
+* **Tipos:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Escopo é o subsistema (`cv`, `search`, `ui`, `pdf`, `claude`…).
+* **Assunto ≤ 72 caracteres**, imperativo ("adicionar", não "adicionado"/"adiciona").
+* **Português sem acentos na mensagem inteira** — casa os commits recentes e evita a camada de codificação do shell no Windows (a mesma razão da regra global de gravar script em arquivo). O código e a documentação continuam acentuados normalmente.
+* **Mensagem com corpo vai para arquivo + `git commit -F`**, nunca por heredoc (regra global do `CLAUDE.md` do usuário).
+* **`Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` em todo commit seu.** Decisão do usuário: atribuição honesta, e o histórico público mostra domínio de ferramenta de IA com método — o que joga a favor no cargo alvo. Os commits `7df6961` e `0d230cb` são anteriores à regra e não têm o trailer; ficam como estão (já publicados).
+* **`BREAKING CHANGE:` no rodapé** quando o contrato de `cvData`/`cv.types.ts` mudar de forma incompatível.
+
+### 8.3 Corte por tema
+
+Um commit é o que alguém poderia querer **ler ou reverter sozinho** — não "o que compila sozinho". Correção de defeito anterior que a tarefa apenas revelou vai em commit próprio, antes da funcionalidade. Spec versionada entra junto da funcionalidade que ela especifica. Edição que já estava no working tree quando a sessão começou é de outro assunto: commit separado.
+
+Quando um arquivo compartilhado (`cv.types.ts`, `cv.ts`) precisar entrar em dois commits, **prepare a versão intermediária**: guarde a final, produza a do primeiro tema, commite, restaure a final, commite o segundo — e confira com `diff` que nada se perdeu. Nunca use rebase interativo (indisponível neste ambiente).
+
+### 8.4 Antes de cada `git commit`, confira o índice
+
+`git commit` publica o **índice inteiro**, não o que você acabou de adicionar. Rode `git diff --cached --name-only` e confira **item a item** que só está ali o que pertence a este tema; rode `git ls-files --others --exclude-standard` e confirme que nenhum arquivo não rastreado deveria estar entrando.
+
+Isto não é zelo teórico: em 2026-09-02 o índice já estava integralmente preparado pelo usuário, incluindo dois diretórios cuja inclusão ainda não tinha sido decidida (`.impeccable/`, `skill-observations/`). Um `git commit` direto os teria levado junto, sem aparecer em lugar nenhum.
+
+**Nunca commite artefato cuja inclusão o usuário não decidiu.** Na dúvida, deixe fora e pergunte em uma linha.
+
+### 8.5 Antes do `push` (quando o usuário pedir)
+
+`git fetch` primeiro e confirme que o ponto de partida não mudou desde o início da sessão; depois de publicar, confirme que local e remoto apontam para o mesmo commit. Nunca `--force` em branch publicada sem pedido explícito e específico do usuário.
