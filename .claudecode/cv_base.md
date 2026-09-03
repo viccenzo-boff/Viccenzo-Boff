@@ -78,7 +78,26 @@ Acadêmico de Sistemas de Informação na Unoesc com sólida experiência em Sup
 
 ## 5. Projetos (`projects`)
 
-### 5.1 Birthday.ai
+> A ordem abaixo espelha a ordem do array `projects` em `cv.ts` — que é a ordem
+> em que os cards aparecem na tela e no PDF.
+
+### 5.1 Sistema de Empréstimo de Equipamentos
+
+- **Descrição:** Sistema full-stack para o controle de empréstimo de notebooks, tablets e extensões dos cursos de computação da Unoesc, projetado para rodar na rede local da secretaria: um portal de toque em que o estudante retira e devolve na bancada e um painel administrativo para a conferência física, o inventário e os cadastros.
+- **Stack:** Next.js 16, TypeScript, Prisma 7, SQLite, BPMN 2.0, MkDocs
+- **Repositório (`repoUrl`):** <https://github.com/viccenzo-boff/sistema-emprestimo-equipamentos>
+- **Wiki (`docsUrl`):** <https://viccenzo-boff.github.io/sistema-emprestimo-equipamentos/> — renderizada como 2º botão do card ("Ver a wiki") e como linha "Documentação" no PDF. É a **raiz** de propósito: o `mike` redireciona a raiz para a versão padrão, então o link não quebra quando sair a `v1.1`.
+
+**Destaques (`highlights`):**
+
+- Modelagem de cinco processos de negócio em BPMN 2.0, com o diagrama publicado derivado do arquivo-fonte por um exportador próprio, que confere em modo verificação se o SVG no disco corresponde à fonte.
+- Análise de regra de negócio a partir da operação real: a devolução declarada pelo estudante no tablet é separada da baixa física conferida pela secretaria, de modo que o equipamento só volta ao estoque depois de recolhido no balcão — o que torna mensurável o tempo em que ele fica parado na bancada.
+- Wiki operacional bilíngue (português e inglês) de 31 páginas, publicada automaticamente por GitHub Actions com três portões de qualidade — build estrito, vocabulário controlado e verificação de links e âncoras — que bloqueiam o deploy da documentação.
+- Verificação de cada entrega contra o sistema em execução, por navegador real e por chamadas HTTP às Server Actions, com migrations ensaiadas em cópia do banco antes de tocar o arquivo real para preservar o histórico de empréstimos.
+
+**Palavras-chave de busca (`searchKeywords`):** BPMN, processo, documentação, wiki, MkDocs, regra de negócio, inventário, empréstimo, Unoesc, QA, migration, Server Actions, SQLite, Prisma.
+
+### 5.2 Birthday.ai
 
 - **Descrição:** Sistema full-stack de mensageria que automatiza felicitações de aniversário em grupos: orquestra o Gemini 2.5 Flash para gerar mensagens personalizadas com IA e as envia via WhatsApp.
 - **Stack:** TypeScript, Node.js, Next.js, Gemini 2.5 Flash, WhatsApp, Vercel
@@ -91,6 +110,8 @@ Acadêmico de Sistemas de Informação na Unoesc com sólida experiência em Sup
 - Integração com WhatsApp via biblioteca não oficial — decisão deliberada de arquitetura, avaliada frente à API oficial do Meta, para operar com custo zero.
 - Aplicação full-stack em TypeScript (backend + frontend Next.js) com painel administrativo, publicada na Vercel.
 - Processo de desenvolvimento disciplinado com Spec-Driven Development (SDD) e ciclo Plan–Execute–Review–Test (PERT), da especificação à homologação.
+
+**Palavras-chave de busca (`searchKeywords`):** IA, mensageria, SDD, Spec-Driven Development, PERT. — moradas no item desde a entrega do 2º projeto; antes viviam na constante do laço do índice e teriam passado a indexar **qualquer** projeto novo por elas.
 
 ---
 

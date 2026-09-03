@@ -55,6 +55,8 @@ export interface Project {
   highlights: string[];
   repoUrl: string;
   liveUrl?: string;
+  /** Wiki/documentação pública do projeto. Renderiza o 2º CTA do card só quando presente. */
+  docsUrl?: string;
   /**
    * Palavras-chave de busca **deste** projeto. Vivem no item, e não na constante
    * do laço de `search-index.ts`: quando havia um projeto só, os termos dele

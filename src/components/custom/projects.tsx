@@ -1,3 +1,5 @@
+import { BookOpen } from "lucide-react";
+
 import { GithubIcon } from "@/components/custom/brand-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,7 +79,7 @@ export function Projects() {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex-wrap gap-3">
                   <Button asChild variant="outline" className="project-cta signature-hover">
                     <a
                       href={project.repoUrl}
@@ -89,6 +91,21 @@ export function Projects() {
                       Ver no GitHub
                     </a>
                   </Button>
+                  {/* 2º CTA só quando o projeto publica documentação (PRD §6):
+                      hoje o Birthday.ai não tem `docsUrl` e segue com um botão só. */}
+                  {project.docsUrl ? (
+                    <Button asChild variant="outline" className="project-cta signature-hover">
+                      <a
+                        href={project.docsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Ver a wiki — ${project.name}`}
+                      >
+                        <BookOpen />
+                        Ver a wiki
+                      </a>
+                    </Button>
+                  ) : null}
                 </CardFooter>
               </Card>
             </div>

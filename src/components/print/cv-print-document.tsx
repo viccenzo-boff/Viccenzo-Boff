@@ -132,6 +132,11 @@ export function CVPrintDocument() {
               <p className="meta">
                 Repositório: <a href={project.repoUrl}>{project.repoUrl}</a>
               </p>
+              {project.docsUrl ? (
+                <p className="meta">
+                  Documentação: <a href={project.docsUrl}>{project.docsUrl}</a>
+                </p>
+              ) : null}
             </article>
           ))}
         </section>
