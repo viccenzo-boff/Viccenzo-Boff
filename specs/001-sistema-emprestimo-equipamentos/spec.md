@@ -1,9 +1,25 @@
-# Spec — Sistema de Empréstimo de Equipamentos no portfólio
+# Spec — 001 · Sistema de Empréstimo de Equipamentos no portfólio
 
 **Repositório alvo:** `Viccenzo-Boff` (este)
 **Repositório de origem:** [`sistema-emprestimo-equipamentos`](https://github.com/viccenzo-boff/sistema-emprestimo-equipamentos)
 **Data:** 2026-09-01
-**Status:** aguardando aprovação para a Fase 3
+**Status:** ✅ concluída em 2026-09-02
+
+> **Nota de migração (2026-09-02).** Esta spec foi escrita antes da adoção do
+> Spec Kit, quando spec, plano e tarefas viviam num arquivo só em `.specs/`. O
+> **corpo abaixo está preservado como foi aprovado** — é registro histórico e
+> não se reescreve. O que foi extraído dele para os artefatos irmãos:
+>
+> * o **como** e as armadilhas da execução → [plan.md](plan.md)
+> * o plano de ação da §5 e os critérios da §6 → [tasks.md](tasks.md), com o
+>   commit que fechou cada tarefa
+>
+> Duas afirmações desta spec **não sobreviveram** à conferência contra o código
+> e foram corrigidas antes de virar texto de currículo — o portão de CI de BPMN
+> (§2.3) e "em operação" vs. "projetado para rodar" (§2.4). O registro está no
+> [plan.md §3.1](plan.md). Onde o corpo abaixo cita `.specs/` ou
+> `.claudecode/`, leia os caminhos atuais do mapa em
+> [`CLAUDE.md`](../../CLAUDE.md) §1.
 
 ---
 
@@ -106,7 +122,7 @@ Quem consome esse array:
 | `src/components/custom/projects.tsx` | Card na tela (título, badges de stack, descrição, destaques, botão do GitHub) |
 | `src/components/print/cv-print-document.tsx` | Bloco equivalente no PDF do currículo |
 | `src/lib/search-index.ts` | Entrada na busca (⌘K) |
-| `.claudecode/cv_base.md` | Espelho legível — o `CLAUDE.md` §3 exige que fique sincronizado |
+| `.specify/memory/cv_base.md` | Espelho legível — o `CLAUDE.md` §3 exige que fique sincronizado |
 
 ### 3.1 Três armadilhas encontradas na descoberta
 
@@ -193,12 +209,12 @@ Corrigir o `AGENTS.md` da origem fica como sugestão, fora do escopo desta spec.
 | 4 | `src/lib/search-index.test.ts` | Teste novo: cada projeto é indexado só pelas próprias palavras | Sem ele a regressão volta em silêncio |
 | 5 | `src/components/custom/projects.tsx` | Botão "Ver a wiki", renderizado só quando há `docsUrl` | D2 |
 | 6 | `src/components/print/cv-print-document.tsx` | Linha da wiki no bloco do projeto, quando houver | O PDF é currículo: precisa levar a URL |
-| 7 | `.claudecode/cv_base.md` | Seção 5.2 com o projeto novo, espelhando `cv.ts` | Exigido pelo `CLAUDE.md` §3 |
+| 7 | `.specify/memory/cv_base.md` | Seção 5.2 com o projeto novo, espelhando `cv.ts` | Exigido pelo `CLAUDE.md` §3 |
 | 8 | `public/curriculo-viccenzo-boff.pdf` | Regerado por `pnpm generate:cv-pdf` | Sem isso o build falha (§3.1a) |
 | 9 | `scripts/cv-pdf.manifest.json` | Regerado no mesmo comando | Idem |
-| 10 | `.claudecode/architecture.md` | Registrar `docsUrl`/`searchKeywords` e o botão condicional | `CLAUDE.md` §6 |
-| 11 | `.claudecode/prd.md` | Decisão D2 com racional + uma linha no histórico de versões | `CLAUDE.md` §6 |
-| 12 | `.specs/portfolio-update-emprestimos.spec.md` | Este arquivo | Entregável da Fase 2 |
+| 10 | `.specify/memory/architecture.md` | Registrar `docsUrl`/`searchKeywords` e o botão condicional | `CLAUDE.md` §6 |
+| 11 | `specs/README.md` | Decisão D2 com racional + uma linha no histórico de versões | `CLAUDE.md` §6 |
+| 12 | `specs/001-sistema-emprestimo-equipamentos/spec.md` | Este arquivo | Entregável da Fase 2 |
 
 **Não muda:** `globals.css`, `page.tsx`, componentes de UI, `SECTION_ORDER`
 (a seção `projetos` já existe), nem qualquer teste e2e.
@@ -293,7 +309,7 @@ Nenhum destes é declarado cumprido sem a saída do comando na mão.
 
 | # | Critério |
 | --- | --- |
-| C1 | `.claudecode/cv_base.md` espelha `cv.ts`: nenhum campo do projeto novo falta lá, e vice-versa |
+| C1 | `.specify/memory/cv_base.md` espelha `cv.ts`: nenhum campo do projeto novo falta lá, e vice-versa |
 | C2 | `architecture.md` e `prd.md` atualizados conforme `CLAUDE.md` §6, sem duplicar fato entre arquivos |
 | C3 | Nenhum dado pessoal de terceiro entra no portfólio — o texto não cita nome de estudante, professor ou administrador |
 | C4 | Toda URL escrita na entrega responde 200 |

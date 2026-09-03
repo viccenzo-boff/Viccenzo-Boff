@@ -7,7 +7,7 @@
         "rule": "overused-font",
         "value": "arial",
         "createdAt": "2026-09-02T03:31:10.301Z",
-        "reason": "Template de impressao do PDF (cv-print-document.tsx), nunca servido pela aplicacao: stack de sistema deliberada para compatibilidade com ATS, documentada em .claudecode/architecture.md sec.7 ('Fonte system stack Arial/Helvetica/Liberation Sans - next/font indisponivel fora do app'). Pre-existente, nao introduzida nesta sessao."
+        "reason": "Template de impressao do PDF (cv-print-document.tsx), nunca servido pela aplicacao: stack de sistema deliberada para compatibilidade com ATS, documentada em .specify/memory/architecture.md sec.7 ('Fonte system stack Arial/Helvetica/Liberation Sans - next/font indisponivel fora do app'). Pre-existente, nao introduzida nesta sessao."
       }
     ]
   }

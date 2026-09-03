@@ -2,14 +2,20 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Não varrer a documentação em busca de classes. Os docs (.claudecode, docs/,
-   README) citam classes de exemplo — ex.: a armadilha `min-h-[calc(100svh_-_
-   var(...))]` em architecture.md §9 — que, se escaneadas, o Tailwind materializa
-   como utilitários e emite CSS inválido (`var(...)`), quebrando o parser do
-   Turbopack no dev (e gerando warning no build). Documentação não tem runtime:
-   excluí-la da detecção automática de conteúdo é seguro e à prova de futuros
-   exemplos. Caminhos relativos a este arquivo (src/app/ → raiz = ../../). */
-@source not "../../.claudecode";
+/* Não varrer a documentação em busca de classes. Os docs (.specify/, specs/,
+   docs/, README) citam classes de exemplo — ex.: a armadilha
+   `min-h-[calc(100svh_-_var(...))]` em architecture.md §9 — que, se escaneadas,
+   o Tailwind materializa como utilitários e emite CSS inválido (`var(...)`),
+   quebrando o parser do Turbopack no dev (e gerando warning no build).
+   Documentação não tem runtime: excluí-la da detecção automática de conteúdo é
+   seguro e à prova de futuros exemplos. Caminhos relativos a este arquivo
+   (src/app/ → raiz = ../../).
+
+   ATENÇÃO: esta lista acompanha a estrutura de documentação. Ao criar pasta
+   nova de docs, acrescente-a aqui — o sintoma de esquecer é um erro de parser
+   de CSS que não aponta para a pasta nova. */
+@source not "../../.specify";
+@source not "../../specs";
 @source not "../../docs";
 @source not "../../README.md";
 

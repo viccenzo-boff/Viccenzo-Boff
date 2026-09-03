@@ -31,7 +31,7 @@ Portfólio/currículo digital de página única, projetado para recrutadores té
 | Busca | cmdk + Radix Dialog, índice derivado de `src/data/cv.ts` |
 | Testes | Playwright — 30 testes e2e + Vitest/happy-dom — 19 testes de unidade |
 
-Princípios: **dados primeiro** (todo o conteúdo vive tipado em [`src/data/cv.ts`](src/data/cv.ts) — a tela e o PDF são projeções dele), componentes pequenos com responsabilidade única, mobile first e HTML semântico. A arquitetura completa está documentada em [`.claudecode/architecture.md`](.claudecode/architecture.md) e as decisões de produto em [`.claudecode/prd.md`](.claudecode/prd.md).
+Princípios: **dados primeiro** (todo o conteúdo vive tipado em [`src/data/cv.ts`](src/data/cv.ts) — a tela e o PDF são projeções dele), componentes pequenos com responsabilidade única, mobile first e HTML semântico. A arquitetura completa está documentada em [`.specify/memory/architecture.md`](.specify/memory/architecture.md) e as decisões de produto em [`specs/README.md`](specs/README.md).
 
 ## Qualidade de Engenharia
 
