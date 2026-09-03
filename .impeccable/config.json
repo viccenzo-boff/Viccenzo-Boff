@@ -8,6 +8,15 @@
         "value": "arial",
         "createdAt": "2026-09-02T03:31:10.301Z",
         "reason": "Template de impressao do PDF (cv-print-document.tsx), nunca servido pela aplicacao: stack de sistema deliberada para compatibilidade com ATS, documentada em .specify/memory/architecture.md sec.7 ('Fonte system stack Arial/Helvetica/Liberation Sans - next/font indisponivel fora do app'). Pre-existente, nao introduzida nesta sessao."
+      },
+      {
+        "rule": "codex-grid-background",
+        "value": "*",
+        "files": [
+          "src/app/globals.css"
+        ],
+        "createdAt": "2026-09-03T01:21:14.875Z",
+        "reason": "Nao e grade de linhas: e campo de pontos de 1px (radial-gradient, celula 26px) dissolvido por mascara eliptica, usado como camada de profundidade do Hero e textura interna do card de Projetos. Pedido explicito do usuario em 2026-07-12 ('simples ate demais', pediu complexidade visual sem quebrar a estetica) e ajustado por ele em 2026-07-12 (opacidade 15pc light vs 10pc dark). Auditoria anterior do proprio impeccable (Frente 4, 2026-07, modo auditar-e-relatar, aprovada item a item pelo usuario) removeu tres recursos de assinatura e MANTEVE este. Registrado em .specify/memory/decisions.md e architecture.md sec.5.6."
       }
     ]
   }
