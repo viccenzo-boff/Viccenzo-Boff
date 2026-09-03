@@ -55,6 +55,13 @@ export interface Project {
   highlights: string[];
   repoUrl: string;
   liveUrl?: string;
+  /**
+   * Palavras-chave de busca **deste** projeto. Vivem no item, e não na constante
+   * do laço de `search-index.ts`: quando havia um projeto só, os termos dele
+   * ("IA", "mensageria", "SDD"…) estavam no laço e passaram a indexar qualquer
+   * projeto novo por palavras sem relação com ele. Coberto por `search-index.test.ts`.
+   */
+  searchKeywords?: string[];
 }
 
 export interface Certification {

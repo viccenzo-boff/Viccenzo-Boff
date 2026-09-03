@@ -50,16 +50,17 @@ function buildSearchIndex(): SearchIndexItem[] {
       sectionLabel: "Projetos",
       title: project.name,
       subtitle: project.stack.join(", "),
+      // "projeto" é propriedade da coleção (vale para todos); o resto é
+      // propriedade do item e vem de `project.searchKeywords`. Enquanto havia um
+      // projeto só, as duas coisas eram indistinguíveis e os termos do
+      // Birthday.ai ("IA", "mensageria", "SDD"…) moravam aqui — indexando
+      // qualquer projeto novo por palavras sem relação com ele.
       keywords: [
         project.description,
         ...project.stack,
         ...project.highlights,
         "projeto",
-        "IA",
-        "mensageria",
-        "SDD",
-        "Spec-Driven Development",
-        "PERT",
+        ...(project.searchKeywords ?? []),
       ],
     });
   }

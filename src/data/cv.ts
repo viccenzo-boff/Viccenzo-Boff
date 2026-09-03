@@ -82,6 +82,7 @@ export const cvData: CVData = {
         "Aplicação full-stack em TypeScript (backend + frontend Next.js) com painel administrativo, publicada na Vercel.",
         "Processo de desenvolvimento disciplinado com Spec-Driven Development (SDD) e ciclo Plan–Execute–Review–Test (PERT), da especificação à homologação.",
       ],
+      searchKeywords: ["IA", "mensageria", "SDD", "Spec-Driven Development", "PERT"],
       repoUrl: "https://github.com/viccenzo-boff/birthday.ai",
       liveUrl: "https://birthday-ai-three.vercel.app",
     },

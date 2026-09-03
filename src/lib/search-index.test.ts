@@ -42,6 +42,42 @@ describe("searchIndex", () => {
     expect(countIn("monitorias-academicas")).toBe(cvData.monitorias.length);
   });
 
+  it("indexa cada projeto apenas pelas próprias searchKeywords", () => {
+    // Guarda da regressão do laço genérico: até esta entrega, "IA",
+    // "mensageria", "SDD", "Spec-Driven Development" e "PERT" — que descrevem
+    // UM projeto — estavam na constante do laço de `buildSearchIndex`, e
+    // portanto entravam nas keywords de todo projeto novo. Nenhum teste
+    // acusava: a contagem por seção continuava correta com as palavras erradas.
+    //
+    // A comparação é por elemento exato, e não por substring: as keywords de um
+    // item incluem descrição e highlights inteiros, e uma palavra curta como
+    // "processo" aparece dentro do texto de outro projeto por coincidência de
+    // prosa ("Processo de desenvolvimento disciplinado…"). O que esta guarda
+    // proíbe é a *contribuição* de searchKeywords alheias, que é o defeito real.
+    for (const project of cvData.projects) {
+      const item = searchIndex.find((i) => i.id === `project-${project.id}`);
+      expect(item).toBeDefined();
+
+      const alheias = cvData.projects
+        .filter((other) => other.id !== project.id)
+        .flatMap((other) => other.searchKeywords ?? [])
+        .filter((keyword) => !(project.searchKeywords ?? []).includes(keyword));
+
+      for (const keyword of alheias) {
+        expect(item?.keywords).not.toContain(keyword);
+      }
+    }
+  });
+
+  it("indexa cada projeto pelas próprias searchKeywords", () => {
+    for (const project of cvData.projects) {
+      const item = searchIndex.find((i) => i.id === `project-${project.id}`);
+      for (const keyword of project.searchKeywords ?? []) {
+        expect(item?.keywords).toContain(keyword);
+      }
+    }
+  });
+
   it("formata o título da experiência como 'cargo · empresa'", () => {
     const first = cvData.experiences[0];
     expect(first).toBeDefined();
